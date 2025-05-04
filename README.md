@@ -45,3 +45,7 @@ Control Minecraft/Linux servers, manage files, and interact via forums — all i
    source venv/bin/activate  # For Linux/macOS
    # OR
    venv\Scripts\activate     # For Windows
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   # Then run through VSCode.
