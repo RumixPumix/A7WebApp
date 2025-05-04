@@ -45,21 +45,72 @@ Control Minecraft/Linux servers, manage files, and interact via forums — all i
    source venv/bin/activate  # For Linux/macOS
    # OR
    venv\Scripts\activate     # For Windows
-2. **Install dependencies**
+   ```
+
+2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
-   # Then run through VSCode.
+   # Then run through VSCode or use the terminal:
+   flask run --port=5000
+   ```
+
+---
 
 ### Frontend Setup (React/Vite)
 
-1. **Install Node.js**
-   Make sure you have the right versions:
+1. **Install Node.js**  
+   Make sure you have the correct versions:
    ```bash
-   node -v
-   npm -v
-2. **Install the npm modules**
+   node -v    # should be v21.4.0
+   npm -v     # should be v10.2.4
+   ```
+
+2. **Install npm modules:**
    ```bash
    npm install
-3. **Run the App**
+   # This installs everything from package.json
+   ```
+
+3. **Run the app:**
    ```bash
    npm run dev
+   # The app will be available at http://localhost:5173
+   ```
+
+---
+
+## Common Issues and FAQ
+
+### 1. Frontend won't start (`npm run dev` fails)
+
+This usually means your dependencies are misconfigured or corrupted.
+
+**Fix:**
+- Delete the following files:
+  - `package.json`
+  - `package-lock.json`
+  - `node_modules/` folder
+- Then reinstall everything:
+  ```bash
+  npm install
+  ```
+
+### 2. Backend not communicating with frontend
+
+Your frontend might be pointing to the wrong backend URL.
+
+**Fix:**
+- Open `config.js` in the frontend.
+- Change the backend URL to one of the following:
+  ```js
+  const BACKEND_URL = "http://localhost:5000"; // if running locally
+  // or
+  const BACKEND_URL = "http://192.168.x.x:5000"; // for LAN access
+  ```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).  
+Self-host and modify freely, but use responsibly.
