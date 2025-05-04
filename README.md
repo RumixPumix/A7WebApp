@@ -100,12 +100,16 @@ This usually means your dependencies are misconfigured or corrupted.
 Your frontend might be pointing to the wrong backend URL.
 
 **Fix:**
-- Open `config.js` in the frontend.
+- Open `src/config/config.js` in the frontend.
 - Change the backend URL to one of the following:
   ```js
-  const BACKEND_URL = "http://localhost:5000"; // if running locally
+  development: {
+      baseURL: 'http://127.0.0.1:5000', //For localhost
+    },
   // or
-  const BACKEND_URL = "http://192.168.x.x:5000"; // for LAN access
+  development: {
+      baseURL: 'http://x.x.x.x:5000',// for LAN access
+    },
   ```
 
 ---
