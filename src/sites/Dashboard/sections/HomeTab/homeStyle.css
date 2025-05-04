@@ -1,0 +1,658 @@
+/* Base Styles */
+.home-tab {
+    padding: 2rem;
+    color: #2c3e50;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+  
+  /* Loading State */
+  .loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Header Styles */
+  .home-header {
+    margin-bottom: 2.5rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  
+  .header-content {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .home-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+  }
+  
+  .welcome-message {
+    font-size: 1rem;
+    color: #7f8c8d;
+    margin: 0 0 1rem 0;
+    font-style: italic;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+  
+  .health-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .health-bar {
+    height: 8px;
+    width: 200px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .health-bar.small {
+    width: 120px;
+  }
+  
+  .health-progress {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  
+  .health-progress[data-health="good"] {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+  }
+  .health-progress[data-health="fair"] {
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+  }
+  .health-progress[data-health="poor"] {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+  }
+  
+  .health-value {
+    font-weight: 600;
+    min-width: 40px;
+  }
+  
+  .quick-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .quick-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.2rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  
+  .quick-stat svg {
+    color: #3498db;
+  }
+  
+  /* Stats Grid Layout */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Card Styles */
+  .hometab-stat-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .hometab-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+  }
+  
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .card-icon {
+    margin-right: 0.8rem;
+    font-size: 1.2rem;
+    color: #3498db;
+  }
+  
+  .status-badge {
+    margin-left: auto;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f0f0f0;
+    color: #7f8c8d;
+  }
+  
+  .status-badge.online {
+    background: #e8f5e9;
+    color: #27ae60;
+  }
+  
+  .status-badge.warning {
+    background: #fff8e1;
+    color: #f39c12;
+  }
+  
+  .status-badge.success {
+    background: #e8f5e9;
+    color: #27ae60;
+  }
+  
+  .status-badge.error {
+    background: #ffebee;
+    color: #e74c3c;
+  }
+  
+  .card-content {
+    padding: 1.5rem;
+  }
+  
+  /* Server Status Card */
+  .server-status .card-icon {
+    color: #2ecc71;
+  }
+  
+  .server-metrics {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .server-metrics .metric {
+    flex: 1;
+  }
+  
+  .metric-value {
+    font-weight: 600;
+    color: #2c3e50;
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 1.2rem;
+  }
+  
+  .metric-value.large {
+    font-size: 1.5rem;
+  }
+  
+  .server-visual {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .server-node {
+    flex: 1;
+    min-width: 100px;
+    padding: 0.8rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .node-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    margin: 0 auto 0.5rem;
+    position: relative;
+  }
+  
+  .node-icon.primary {
+    background: #3498db;
+  }
+  
+  .node-icon.secondary {
+    background: #9b59b6;
+  }
+  
+  .node-status {
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+  }
+  
+  .node-status.online {
+    color: #2ecc71;
+  }
+  
+  .node-status.offline {
+    color: #e74c3c;
+  }
+  
+  /* User Management Card */
+  .user-management .card-icon {
+    color: #9b59b6;
+  }
+  
+  .user-metrics {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .user-metrics .metric {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .user-roles {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .user-roles .role {
+    flex: 1;
+    padding: 0.8rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .user-roles .role svg {
+    display: block;
+    margin: 0 auto 0.5rem;
+    color: #9b59b6;
+  }
+  
+  .user-activity-chart {
+    display: flex;
+    height: 100px;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .chart-bar {
+    flex: 1;
+    background: #3498db;
+    border-radius: 4px 4px 0 0;
+    min-width: 20px;
+    transition: height 0.5s ease;
+  }
+  
+  /* Storage Analytics Card */
+  .storage-analytics .card-icon {
+    color: #f1c40f;
+  }
+  
+  .storage-visual {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .storage-details {
+    flex: 1;
+  }
+  
+  .storage-metric {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+  
+  .storage-breakdown {
+    margin-top: 1.5rem;
+  }
+  
+  .breakdown-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .breakdown-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 0.8rem;
+  }
+  
+  .breakdown-color.documents {
+    background: #3498db;
+  }
+  .breakdown-color.media {
+    background: #9b59b6;
+  }
+  .breakdown-color.databases {
+    background: #2ecc71;
+  }
+  .breakdown-color.other {
+    background: #f1c40f;
+  }
+  
+  /* Activity Timeline Card */
+  .activity-timeline .card-icon {
+    color: #e74c3c;
+  }
+  
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+  
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #f0f0f0;
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .timeline-icon {
+    position: absolute;
+    left: -32px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e74c3c;
+    z-index: 1;
+  }
+  
+  .timeline-content {
+    padding-left: 1rem;
+  }
+  
+  .timeline-time {
+    display: block;
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-bottom: 0.3rem;
+  }
+  
+  .timeline-text {
+    margin: 0;
+    line-height: 1.5;
+    word-break: normal;
+  }
+  
+    /* Performance Metrics Card - Updated and Fixed */
+  .performance-metrics .card-icon {
+    color: #3498db;
+  }
+
+  .performance-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .performance-metric {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .performance-metric-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .performance-metric-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 500;
+  }
+
+  .performance-metric-value {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #2c3e50;
+  }
+
+  .performance-metric-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+  }
+
+  .performance-metric-progress {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    width: var(--value);
+    transition: width 0.5s ease;
+  }
+
+  /* Special styling for different metrics */
+  .performance-metric.cpu .performance-metric-progress {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+  }
+
+  .performance-metric.memory .performance-metric-progress {
+    background: linear-gradient(90deg, #9b59b6, #8e44ad);
+  }
+
+  .performance-metric.response-time .performance-metric-progress {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+  }
+
+  .performance-metric.requests .performance-metric-progress {
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+  }
+
+  /* Performance Tips */
+  .performance-tips-container {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+  }
+
+  .performance-tips-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    color: #2c3e50;
+  }
+
+  .performance-tips-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+  }
+
+  .performance-tips-list li {
+    margin-bottom: 0.3rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .performance-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .performance-metric {
+      padding: 0.8rem;
+    }
+  }
+  /* System Recommendations Card */
+  .system-recommendations .card-icon {
+    color: #2ecc71;
+  }
+  
+  .health-metrics {
+    margin-bottom: 1.5rem;
+  }
+  
+  .health-metric {
+    margin-bottom: 1rem;
+  }
+  
+  .health-metric:last-child {
+    margin-bottom: 0;
+  }
+  
+  .recommendations h4 {
+    margin: 0 0 0.8rem 0;
+    font-size: 0.9rem;
+    color: #2c3e50;
+  }
+  
+  .recommendation-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  
+  .recommendation-item.critical {
+    background: #ffebee;
+    color: #e74c3c;
+  }
+  
+  .recommendation-item.warning {
+    background: #fff8e1;
+    color: #f39c12;
+  }
+  
+  .recommendation-item.info {
+    background: #e3f2fd;
+    color: #3498db;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 1200px) {
+    .metric-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .home-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .header-content {
+      text-align: center;
+    }
+    
+    .health-indicator {
+      justify-content: center;
+    }
+    
+    .quick-stats {
+      justify-content: center;
+    }
+    
+    .storage-visual {
+      flex-direction: column;
+    }
+    
+    .server-visual {
+      justify-content: center;
+    }
+  }
+  
+  /* Animation for card entrance */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .hometab-stat-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+  }
+  
+  .hometab-stat-card:nth-child(1) { animation-delay: 0.1s; }
+  .hometab-stat-card:nth-child(2) { animation-delay: 0.2s; }
+  .hometab-stat-card:nth-child(3) { animation-delay: 0.3s; }
+  .hometab-stat-card:nth-child(4) { animation-delay: 0.4s; }
+  .hometab-stat-card:nth-child(5) { animation-delay: 0.5s; }
+  .hometab-stat-card:nth-child(6) { animation-delay: 0.6s; }

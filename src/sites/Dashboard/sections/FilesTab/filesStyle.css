@@ -1,0 +1,337 @@
+/* Files Tab - Complete CSS */
+.ft-tab-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #333;
+}
+
+.ft-tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* File Actions */
+.ft-file-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.ft-btn-primary {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.ft-btn-primary:hover {
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* File Table - Updated with perfect border alignment */
+.ft-file-table-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.ft-file-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.ft-file-table th {
+  background: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #eaeaea;
+}
+
+.ft-file-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* Fix for first cell - no more display:flex */
+.ft-file-table td:first-child {
+  font-weight: 500;
+  color: #2c3e50;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  padding-left: 2.5rem; /* Make room for icons */
+}
+
+/* Update the icon positioning */
+.ft-file-icon, 
+.ft-folder-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ft-private-file-icon {
+  position: absolute;
+  left: 2rem; /* Position after the file/folder icon */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+}
+
+/* Adjust padding to accommodate both icons */
+.ft-file-table td:first-child {
+  padding-left: 3.5rem; /* Increased to fit both icons */
+}
+
+/* Adjust text spacing */
+.ft-file-table td:first-child > span,
+.ft-file-table td:first-child > button {
+  padding-left: 0.5rem; /* Reduced since icons are absolutely positioned */
+}
+
+/* Adjust the name to account for icon spacing */
+.ft-file-table td:first-child > span,
+.ft-file-table td:first-child > button {
+  display: inline-block;
+  padding-left: 1.5rem; /* Space for icon */
+}
+
+/* Folder name button styling */
+.ft-folder-name {
+  background: none;
+  border: none;
+  color: #2c3e50;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.ft-folder-name:hover {
+  color: #3498db;
+  text-decoration: underline;
+}
+
+/* Rest of the table styling remains the same */
+.ft-file-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ft-file-table tr:hover td {
+  background-color: #f9f9f9;
+}
+
+.ft-right-align {
+  text-align: right !important;
+}
+
+.ft-file-table td:nth-child(3) {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+.ft-file-table td:nth-child(2) {
+  font-family: monospace;
+  color: #555;
+}
+
+.ft-btn-icon {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  color: #555;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.ft-btn-icon:hover {
+  background: #e9ecef;
+  color: #3498db;
+  transform: scale(1.1);
+}
+
+.ft-btn-icon.ft-danger {
+  color: #e74c3c;
+}
+
+.ft-btn-icon.ft-danger:hover {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+/* Last Updated Text */
+.ft-last-updated {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #95a5a6;
+  font-style: italic;
+}
+
+/* Loading & Empty States */
+.ft-empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #95a5a6;
+  font-size: 1.1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.ft-file-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ft-tab-button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  color: #555;
+}
+
+.ft-tab-button.ft-active {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border-color: #2980b9;
+}
+
+.ft-tab-button:hover:not(.ft-active) {
+  background: #e9ecef;
+}
+
+/* Private File Styling */
+.ft-private-file-icon {
+  color: #6200ee;
+  margin-right: 8px;
+  font-size: 0.9em;
+}
+
+.ft-private-file {
+  background-color: rgba(98, 0, 238, 0.05);
+}
+
+/* Folder Styling */
+.ft-folder-icon {
+  color: #ffb74d;
+}
+
+.ft-file-icon {
+  color: #90a4ae;
+}
+
+.ft-folder-name {
+  background: none;
+  border: none;
+  color: #2c3e50;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  display: inline;
+}
+
+.ft-folder-name:hover {
+  color: #3498db;
+  text-decoration: underline;
+}
+
+/* Breadcrumb Navigation */
+.ft-breadcrumb {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ft-breadcrumb-item {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.ft-breadcrumb-item:hover {
+  background-color: #f0f7ff;
+  text-decoration: underline;
+}
+
+.ft-breadcrumb-separator {
+  color: #95a5a6;
+  margin: 0 0.25rem;
+}
+
+/* Error Message */
+.ft-error-message {
+  color: #e74c3c;
+  background-color: #fdecea;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #e74c3c;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .ft-tab-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ft-file-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .ft-file-table th, 
+  .ft-file-table td {
+    padding: 0.8rem;
+  }
+  
+  .ft-file-table td:first-child {
+    max-width: 150px;
+  }
+}

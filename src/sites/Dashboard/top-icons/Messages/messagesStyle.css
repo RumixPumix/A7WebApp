@@ -1,0 +1,249 @@
+.messages-dropdown {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 400px;
+    max-height: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+}
+
+.messages-header {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.messages-header h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.messages-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.messages-search svg {
+    position: absolute;
+    left: 10px;
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+.messages-search input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.messages-search input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.conversations-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.conversation-item {
+    display: flex;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.conversation-item.unread {
+    background-color: #f0f7fd;
+}
+
+.conversation-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-name {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: #95a5a6;
+    font-weight: normal;
+}
+
+.conversation-preview {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    padding-right: 15px;
+}
+
+.unread-badge {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: #3498db;
+    border-radius: 50%;
+}
+
+.conversation-detail {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.conversation-user {
+    display: flex;
+    align-items: center;
+}
+
+.conversation-user h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.conversation-user p {
+    margin: 0.2rem 0 0 0;
+    font-size: 0.8rem;
+    color: #95a5a6;
+}
+
+.conversation-menu {
+    background: none;
+    border: none;
+    color: #7f8c8d;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.conversation-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+.message {
+    max-width: 70%;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.message.received {
+    margin-right: auto;
+}
+
+.message.sent {
+    margin-left: auto;
+}
+
+.message-content {
+    padding: 0.8rem 1rem;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.message.received .message-content {
+    background-color: white;
+    border-top-left-radius: 4px;
+    color: #2c3e50;
+}
+
+.message.sent .message-content {
+    background-color: #3498db;
+    color: white;
+    border-top-right-radius: 4px;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    color: #95a5a6;
+    margin-top: 0.3rem;
+    text-align: right;
+}
+
+.conversation-input {
+    display: flex;
+    padding: 0.8rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.conversation-input input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+.conversation-input input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.send-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

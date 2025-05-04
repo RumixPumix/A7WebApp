@@ -1,0 +1,487 @@
+/* Community Forum Tab - Complete CSS with Overflow Fixes */
+.tab-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    word-wrap: break-word; /* Base overflow protection */
+  }
+  
+  .tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap; /* Allow header to wrap on small screens */
+    gap: 1rem;
+  }
+  
+  .tab-header h3 {
+    font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    min-width: 0; /* Fix flex text overflow */
+  }
+  
+  /* Forum Posts List */
+  .forum-posts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+  
+  .forum-post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #eaeaea;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Critical for flex child overflow */
+  }
+  
+  .forum-post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+  
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+    min-width: 0; /* Fix flex text overflow */
+  }
+  
+  .post-header h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
+    min-width: 0; /* Allows text to truncate properly */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .post-type {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+    flex-shrink: 0; /* Prevent badge from shrinking */
+  }
+  
+  .post-type[value="discussion"] {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  .post-type[value="question"] {
+    background: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  .post-type[value="announcement"] {
+    background: #e8f5e9;
+    color: #388e3c;
+  }
+  
+  .post-preview {
+    color: #555;
+    margin-bottom: 1.5rem;
+    flex: 1;
+  }
+  
+  .post-preview p {
+    margin: 0;
+    display: -webkit-box;
+    /*-webkit-line-clamp: 3;  Limit to 3 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+  
+  .post-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .post-footer span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+  
+  .post-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+  }
+
+    /* Button Styles */
+  .btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  .btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+  }
+
+  .btn-secondary:hover {
+    background: #dfe6e9;
+  }
+  
+  /* Post Detail View */
+  .forum-post-detail {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden; /* Contain all content */
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    color: #3498db;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    white-space: nowrap;
+  }
+  
+  .back-button:hover {
+    color: #2980b9;
+  }
+  
+  .post-header h2 {
+    font-size: clamp(1.5rem, 2.5vw, 1.8rem);
+    color: #2c3e50;
+    margin: 0 0 1rem 0;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  
+  .post-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .post-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .post-content p {
+    margin: 0 0 1em 0;
+    word-break: break-word;
+    white-space: pre-line;
+  }
+  
+  .post-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .post-actions button {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .post-actions button:hover {
+    background: #e9ecef;
+  }
+  
+  /* Comments Section */
+  .post-comments {
+    margin-top: 2rem;
+  }
+  
+  .post-comments h3 {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+  }
+  
+  .comment-form {
+    margin-bottom: 2rem;
+  }
+  
+  .comment-form textarea {
+    width: 100%;
+    min-height: 100px;
+    max-width: 100%;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+    word-break: break-word;
+  }
+  
+  .comment {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+  }
+  
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .comment-header span:first-child {
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .comment-content {
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    white-space: pre-line;
+  }
+  
+  .comment-actions {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .comment-actions button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+  }
+  
+  .comment-actions button:hover {
+    text-decoration: underline;
+  }
+  
+  /* Modal */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+    word-break: break-word;
+  }
+  
+  .modal h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    word-break: break-word;
+  }
+  
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1.5rem;
+    min-width: 0; /* Fix flexbox overflow */
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+    word-break: break-word;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    max-width: 100%;
+    word-break: normal;
+  }
+  
+  .form-group textarea {
+    min-height: 150px;
+    resize: vertical;
+    white-space: pre-wrap;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  /* Loading & Empty States */
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: #7f8c8d;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+    word-break: break-word;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #95a5a6;
+    font-size: 1.1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    word-break: break-word;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .forum-posts-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .post-meta,
+    .post-footer {
+      gap: 0.8rem;
+      font-size: 0.8rem;
+    }
+    
+    .modal-content {
+      width: 95%;
+      padding: 1.5rem;
+    }
+    
+    .post-actions,
+    .form-actions {
+      justify-content: center;
+    }
+    
+    .post-header h4 {
+      white-space: normal; /* Allow title to wrap on mobile */
+    }
+  }
+  
+  /* Print Styles */
+  @media print {
+    .forum-post-card,
+    .forum-post-detail {
+      box-shadow: none;
+      border: 1px solid #ddd;
+      page-break-inside: avoid;
+    }
+    
+    .post-actions,
+    .comment-actions button {
+      display: none;
+    }
+  }

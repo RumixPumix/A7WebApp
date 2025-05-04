@@ -1,0 +1,140 @@
+.console-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #252526;
+    border-bottom: 1px solid #333;
+  }
+  
+  .console-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .console-icon {
+    width: 20px;
+    height: 20px;
+    color: #569cd6;
+  }
+  
+  .console-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #d4d4d4;
+  }
+  
+  .console-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .console-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background-color: #3a3d41;
+    color: #d4d4d4;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .console-btn:hover {
+    background-color: #45494e;
+  }
+  
+  .console-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .clear-btn {
+    background-color: #5a1e1e;
+  }
+  
+  .clear-btn:hover {
+    background-color: #6e2424;
+  }
+  
+  .console-content {
+    flex: 1;
+    padding: 12px 16px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .console-line {
+    display: flex;
+    margin-bottom: 8px;
+  }
+  
+  .console-prompt {
+    margin-right: 10px;
+    color: #569cd6;
+    font-weight: bold;
+  }
+  
+  .console-text {
+    flex: 1;
+  }
+  
+  .console-line.info .console-text {
+    color: #9cdcfe;
+  }
+  
+  .console-line.warning {
+    color: #ffcc00;
+  }
+  
+  .console-line.warning .console-prompt {
+    color: #ffcc00;
+  }
+  
+  .console-line.error {
+    color: #f48771;
+  }
+  
+  .console-line.error .console-prompt {
+    color: #f48771;
+  }
+  
+  .console-input {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #252526;
+    border-top: 1px solid #333;
+  }
+  
+  .console-input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .console-input input::placeholder {
+    color: #5a5a5a;
+  }
