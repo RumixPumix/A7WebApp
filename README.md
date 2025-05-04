@@ -49,3 +49,17 @@ Control Minecraft/Linux servers, manage files, and interact via forums — all i
    ```bash
    pip install -r requirements.txt
    # Then run through VSCode.
+
+### Frontend Setup (React/Vite)
+
+1. **Install Node.js**
+   Make sure you have the right versions:
+   ```bash
+   node -v
+   npm -v
+2. **Install the npm modules**
+   ```bash
+   npm install
+3. **Run the App**
+   ```bash
+   npm run dev
