@@ -34,6 +34,7 @@ Control Minecraft/Linux servers, manage files, and interact via forums — all i
 - [VS Code](https://code.visualstudio.com/) (recommended)
 - [Python 3.8+](https://www.python.org/)
 - [Node.js v21.4.0](https://nodejs.org/en/download/) with npm v10.2.4
+- [MariaDB](https://mariadb.org/download/) 
 
 ---
 
@@ -75,6 +76,47 @@ Control Minecraft/Linux servers, manage files, and interact via forums — all i
    ```bash
    npm run dev
    # The app will be available at http://localhost:5173
+   ```
+
+---
+
+### Database Configuration
+
+1. **Install MariaDB:**  
+   Download and install it from the official site:  
+   [https://mariadb.org/download/](https://mariadb.org/download/)
+
+2. **Configure your environment variables:**  
+   Open the `.env` file located at:  
+   `flask/.env`
+
+   It should look like this:
+
+   ```env
+   SECRET_KEY=super-secret-key           # You can change this if needed
+   DATABASE_URL=mysql+pymysql://root:your_password@localhost/
+   DB_NAME=A7FlaskDB                     # Keep this as-is
+   JWT_SECRET_KEY=super-jwt-secret      # You can change this if needed
+   ```
+
+   Replace `your_password` with the actual password you set for the MariaDB user (likely `root` by default).
+
+3. **Database Initialization:**  
+   The database will configure itself automatically on first run.
+
+4. **Default Login Credentials:**  
+   You can log in using the following preset accounts:
+
+   **Administrator account:**
+   ```
+   Username: admin
+   Password: 1234
+   ```
+
+   **User account:**
+   ```
+   Username: user
+   Password: 1234
    ```
 
 ---

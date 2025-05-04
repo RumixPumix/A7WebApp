@@ -135,6 +135,17 @@ def setup_database():
             print("Creating tables (new database)...")
             db.create_all()
             print("Tables created successfully.")
+            # Insert default users
+            admin_user = User(username="admin", is_admin=True)
+            admin_user.set_password("1234")
+
+            regular_user = User(username="user", is_admin=False)
+            regular_user.set_password("1234")
+
+            db.session.add_all([admin_user, regular_user])
+            db.session.commit()
+
+            print("Default users 'admin' and 'user' have been created.")
         else:
             for table in all_tables:
                 if not check_table_structure(inspector, table):
