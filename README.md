@@ -137,7 +137,7 @@ This usually means your dependencies are misconfigured or corrupted.
   npm install
   ```
 
-  ### 2. MariaDB Connection failed
+### 2. MariaDB Connection failed
 
 This usually means your password is incorrect.
 
