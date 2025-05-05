@@ -149,6 +149,7 @@ This usually means your password is incorrect.
 
 - Reconfigure root account:
   ```sql
+  USE mysql;
   ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyN3wP4ssw0rd'; flush privileges; exit;
   ```
 
