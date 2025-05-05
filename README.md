@@ -137,7 +137,22 @@ This usually means your dependencies are misconfigured or corrupted.
   npm install
   ```
 
-### 2. Backend not communicating with frontend
+  ### 2. MariaDB Connection failed
+
+This usually means your password is incorrect.
+
+**Fix:**
+- Check .env file:
+  ```bash
+  DATABASE_URL=mysql+pymysql://root:1234@localhost/
+  ```
+
+- Reconfigure root account:
+  ```sql
+  ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyN3wP4ssw0rd'; flush privileges; exit;
+  ```
+
+### 3. Backend not communicating with frontend
 
 Your frontend might be pointing to the wrong backend URL.
 
