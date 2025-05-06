@@ -9,7 +9,7 @@ import Loading from './sites/ModularComponents/spinner';
 function App() {
     const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    console.debug("App component rendered");
     useEffect(() => {
         async function checkUser() {
             const user = await validateAndFetchUser();
