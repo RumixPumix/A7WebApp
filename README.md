@@ -3,8 +3,8 @@
 **Self-Hosted Server Management Dashboard with Social Features**  
 Control Minecraft/Linux servers, manage files, and interact via forums — all in one place.
 
-![Demo Screenshot](![image](https://github.com/user-attachments/assets/8b8e9fcb-672a-4f6f-a0ea-e9feda93ab7a)
-)
+![image](https://github.com/user-attachments/assets/3a6f1f7a-34c6-45a5-9c7c-e95f6d179994)
+
 
 ---
 
