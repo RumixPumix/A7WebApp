@@ -10,6 +10,7 @@ from app import db
 import json
 import re
 from datetime import datetime, timedelta
+import threading
 
 
 file_bp = Blueprint('file_bp', __name__)
@@ -28,13 +29,19 @@ def check_permission(current_user):
         return None, (jsonify({"message": "You need to login first!"}), 401)
     return user, None
 
+sync_lock = threading.Lock()
+
 def synchronize_filesystem_with_db():
     """Synchronize files in the filesystem with the database records."""
+
+    if not sync_lock.acquire(blocking=False):
+        print("Sync already in progress, skipping...")
+        return
+
     try:
         # Get all files from the database
         db_files = File.query.all()
         db_file_paths = {file.file_path for file in db_files}
-        db_file_names = {os.path.basename(file.file_path) for file in db_files}
 
         # Track changes
         added_count = 0
@@ -58,7 +65,7 @@ def synchronize_filesystem_with_db():
                     new_file = File(
                         file_name=base_name,
                         file_extension=extension[1:].lower(),
-                        uploaded_by=1,  # Default to rumic (ID 1)
+                        uploaded_by=1,  # Default to SYSTEM_USER_ID or admin user ID
                         file_size=stat.st_size,
                         file_path=filepath,
                         mime_type=file_type,
@@ -84,6 +91,8 @@ def synchronize_filesystem_with_db():
     except Exception as e:
         db.session.rollback()
         print(f"Sync failed: {str(e)}")
+    finally:
+        sync_lock.release()
 
 
 def load_uploads_data():
