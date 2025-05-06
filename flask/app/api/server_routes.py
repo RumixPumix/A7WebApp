@@ -172,7 +172,7 @@ def delete_server(server_id):
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if server.owner_id != user.id or not user.is_admin:
+        if not (server.owner_id == user.id or user.is_admin):
             return jsonify({"message": "You do not have permission to delete this server"}), 403
         
         result = stop_server(server)
@@ -207,9 +207,9 @@ def update_server():
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if server.owner_id != user.id or not user.is_admin:
-            return jsonify({"message": "You do not have permission to update this server"}), 403
-        
+        if not (server.owner_id == user.id or user.is_admin):
+            return jsonify({"message": "You do not have permission..."}), 403
+
         data = request.get_json()
         if not data:
             return jsonify({"message": "No data provided"}), 400
@@ -245,7 +245,7 @@ def start_server_route(server_id):
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if server.owner_id != user.id or not user.is_admin:
+        if not(server.owner_id == user.id or user.is_admin):
             return jsonify({"message": "You do not have permission to start this server"}), 403
 
         result = start_server(server)
@@ -270,7 +270,7 @@ def stop_server_route(server_id):
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if server.owner_id != user.id or not user.is_admin:
+        if not(server.owner_id == user.id or user.is_admin):
             return jsonify({"message": "You do not have permission to stop this server"}), 403
 
         result = stop_server(server)
@@ -295,7 +295,7 @@ def restart_server_route(server_id):
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if server.owner_id != user.id or not user.is_admin:
+        if not(server.owner_id == user.id or user.is_admin):
             return jsonify({"message": "You do not have permission to restart this server"}), 403
 
         result = restart_server(server)

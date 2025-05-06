@@ -387,7 +387,7 @@ def delete_file(file_id):
             }), 404
         
         # Check permissions (admin or owner)
-        if not user.is_admin and file.uploaded_by != user.id:
+        if not (user.is_admin or file.uploaded_by == user.id):
             print(f"User {user.username} attempted to delete file {file_id} without permission.")
             return jsonify({
                 "message": "Permission denied"
