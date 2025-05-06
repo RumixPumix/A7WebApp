@@ -131,9 +131,8 @@ def delete_post(post_id):
     if not post:
         return jsonify({'message': 'Post not found'}), 404
     
-    if post.user_id != user.id:
+    if not (user.is_admin or post.user_id == user.id):
         return jsonify({"status": False, "message": "You are not authorized to delete this post!"}), 403
-    
     
     db.session.delete(post)
     db.session.commit()
