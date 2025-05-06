@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import validateAndFetchUser from './API/validateAndFetchUser';
 import LoginBoard from './sites/Login/login';
 import Dashboard from './sites/Dashboard/dashboard';
+import Loading from './sites/ModularComponents/spinner';
 
 function App() {
     const [userInfo, setUserInfo] = useState(null);
@@ -21,7 +22,11 @@ function App() {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div>
+                <Loading />
+            </div>
+        );
     }
 
     return (

@@ -10,8 +10,11 @@ auth_bp = Blueprint('auth_bp', __name__)
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
+
     username = data.get('username')
     password = data.get('password')
+
+    #Validate username... 
 
     user = User.query.filter_by(username=username).first()
 
