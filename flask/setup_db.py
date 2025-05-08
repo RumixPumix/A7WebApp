@@ -8,11 +8,117 @@ from app.models.file import File
 from app.models.server import Server
 from app.models.plugin import Plugin
 from app.models.serverplugin import ServerPlugin
+from app.models.role import Role
+from app.models.permission import Permission
 from dotenv import load_dotenv
 from app import create_app
+import json
 
 # Load environment variables
 load_dotenv()
+
+def create_json_files():
+    """Create JSON files for permissions and roles"""
+    permissions_data = {
+        "permissions": [
+            {"name": "admin.route.get.users", "description": "Get all users"},
+            {"name": "admin.route.delete.user", "description": "Delete a user"},
+            {"name": "admin.route.create.user", "description": "Create a new user"},
+            {"name": "admin.route.update.user", "description": "Update user information"},
+            {"name": "admin.route.get.tokens", "description": "Get all registration tokens"},
+            {"name": "admin.route.create.token", "description": "Create a new registration token"},
+            {"name": "admin.route.delete.token", "description": "Delete a registration token"},
+            {"name": "admin.route.ban.user", "description": "Ban a user"},
+            {"name": "admin.route.unban.user", "description": "Unban a user"},
+            {"name": "admin.route.unban.user.limited", "description": "Unban a user that only that user banned"},
+            {"name": "file.route.get.files", "description": "Get all files"},
+            {"name": "file.route.upload.file", "description": "Upload a file with no restrictions"},
+            {"name": "file.route.upload.file.limited", "description": "Upload a file with restrictions"},
+            {"name": "file.route.download.file", "description": "Download a file"},
+            {"name": "file.route.delete.file.limited", "description": "Delete a file only that user uploaded"},
+            {"name": "file.route.delete.file", "description": "Delete any file"},
+            {"name": "file.route.update.file", "description": "Update file information"},
+            {"name": "file.route.update.file.limited", "description": "Update file information only that user uploaded"},
+        ]
+    }
+
+    with open('permissions.json', 'w') as f:
+        json.dump(permissions_data, f, indent=4)
+
+    roles_data = {
+        "roles": [
+            {"name": "Admin", "description": "Administrator role with all permissions", "permissions": [
+                "admin.route.get.users", "admin.route.delete.user", "admin.route.create.user",
+                "admin.route.update.user", "admin.route.get.tokens", "admin.route.create.token",
+                "admin.route.delete.token", "admin.route.ban.user", "admin.route.unban.user"
+            ]},
+            {"name": "Moderator", "description": "Moderator role with limited permissions", "permissions": [
+                "admin.route.get.users", "admin.route.ban.user", "admin.route.get.tokens", "admin.route.create.token"
+            ]},
+            {"name": "Uploader", "description": "User with unlimited uploads", "permissions": [
+                "file.route.upload.file"
+            ]},
+            {"name": "User", "description": "Regular user role with limited permissions", "permissions": [
+                "file.route.get.files", "file.route.upload.file.limited", "file.route.download.file",
+                "file.route.delete.file.limited", "file.route.update.file.limited"
+            ]},
+        ]
+    }
+
+    with open('roles.json', 'w') as f:
+        json.dump(roles_data, f, indent=4)
+
+def permissions_and_roles(app):
+    # Load permissions
+    try:
+        
+        with app.app_context():
+            with open('permissions.json', 'r') as f:
+                permissions_data = json.load(f)
+                for permission in permissions_data['permissions']:
+                    permission_obj = Permission.query.filter_by(name=permission['name']).first()
+                    if not permission_obj:
+                        permission_obj = Permission(name=permission['name'], description=permission['description'])
+                        db.session.add(permission_obj)
+            db.session.commit()
+    except FileNotFoundError:
+        print("permissions.json file not found. Skipping permissions setup.")
+        return
+    except json.JSONDecodeError:
+        print("Error decoding JSON from permissions.json. Skipping permissions setup.")
+        return
+    except Exception as e:
+        print(f"An unexpected error occurred while processing permissions: {e}")
+        return
+
+    # Load roles and assign permissions
+    try:
+        with app.app_context():
+            with open('roles.json', 'r') as f:
+                roles_data = json.load(f)
+                for role in roles_data['roles']:
+                    role_obj = Role.query.filter_by(name=role['name']).first()
+                    if not role_obj:
+                        role_obj = Role(name=role['name'], description=role['description'])
+                    # Clear existing permissions to avoid duplication or conflicts
+                    role_obj.permissions = []
+
+                    for perm_name in role['permissions']:
+                        perm_obj = Permission.query.filter_by(name=perm_name).first()
+                        if perm_obj:
+                            role_obj.permissions.append(perm_obj)
+                        else:
+                            print(f"Warning: Permission '{perm_name}' not found in DB, skipping.")
+
+                    db.session.add(role_obj)
+            db.session.commit()
+    except FileNotFoundError:
+        print("roles.json file not found. Skipping roles setup.")
+    except json.JSONDecodeError:
+        print("Error decoding JSON from roles.json. Skipping roles setup.")
+    except Exception as e:
+        print(f"An unexpected error occurred while processing roles: {e}")
+
 
 def check_and_create_database(engine, db_name):
     """Check if database exists, create if it doesn't"""
@@ -111,6 +217,18 @@ def drop_and_recreate_tables(tables_to_recreate):
             print(f"Recreating table '{model.__table__.name}'...")
             model.__table__.create(db.engine)
 
+def generate_default_users(app):
+    with app.app_context():
+        if not User.query.filter_by(username="admin").first():
+                admin_user = User(username="admin")
+                admin_user.set_password("1234")
+                db.session.add(admin_user)
+        if not User.query.filter_by(username="user").first():
+                regular_user = User(username="user")
+                regular_user.set_password("1234")
+                db.session.add(regular_user)
+        db.session.commit()
+
 def setup_database():
     db_url = os.getenv('DATABASE_URL')  # mysql+pymysql://root:1203@localhost/
     db_name = os.getenv('DB_NAME')      # A7FlaskDB
@@ -136,16 +254,7 @@ def setup_database():
             db.create_all()
             print("Tables created successfully.")
             # Insert default users
-            admin_user = User(username="admin", is_admin=True)
-            admin_user.set_password("1234")
-
-            regular_user = User(username="user", is_admin=False)
-            regular_user.set_password("1234")
-
-            db.session.add_all([admin_user, regular_user])
-            db.session.commit()
-
-            print("Default users 'admin' and 'user' have been created.")
+            generate_default_users()
         else:
             for table in all_tables:
                 if not check_table_structure(inspector, table):
@@ -159,6 +268,11 @@ def setup_database():
                 drop_and_recreate_tables(tables_to_recreate)
             else:
                 print("All tables are up-to-date. No changes needed.")
+        # Permissions and roles setup
+        create_json_files()
+        permissions_and_roles(app)
+        #Check for default accounts
+        generate_default_users(app)
 
 if __name__ == '__main__':
     setup_database()

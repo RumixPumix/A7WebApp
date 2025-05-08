@@ -1,0 +1,76 @@
+{
+    "permissions": [
+        {
+            "name": "admin.route.get.users",
+            "description": "Get all users"
+        },
+        {
+            "name": "admin.route.delete.user",
+            "description": "Delete a user"
+        },
+        {
+            "name": "admin.route.create.user",
+            "description": "Create a new user"
+        },
+        {
+            "name": "admin.route.update.user",
+            "description": "Update user information"
+        },
+        {
+            "name": "admin.route.get.tokens",
+            "description": "Get all registration tokens"
+        },
+        {
+            "name": "admin.route.create.token",
+            "description": "Create a new registration token"
+        },
+        {
+            "name": "admin.route.delete.token",
+            "description": "Delete a registration token"
+        },
+        {
+            "name": "admin.route.ban.user",
+            "description": "Ban a user"
+        },
+        {
+            "name": "admin.route.unban.user",
+            "description": "Unban a user"
+        },
+        {
+            "name": "admin.route.unban.user.limited",
+            "description": "Unban a user that only that user banned"
+        },
+        {
+            "name": "file.route.get.files",
+            "description": "Get all files"
+        },
+        {
+            "name": "file.route.upload.file",
+            "description": "Upload a file with no restrictions"
+        },
+        {
+            "name": "file.route.upload.file.limited",
+            "description": "Upload a file with restrictions"
+        },
+        {
+            "name": "file.route.download.file",
+            "description": "Download a file"
+        },
+        {
+            "name": "file.route.delete.file.limited",
+            "description": "Delete a file only that user uploaded"
+        },
+        {
+            "name": "file.route.delete.file",
+            "description": "Delete any file"
+        },
+        {
+            "name": "file.route.update.file",
+            "description": "Update file information"
+        },
+        {
+            "name": "file.route.update.file.limited",
+            "description": "Update file information only that user uploaded"
+        }
+    ]
+}

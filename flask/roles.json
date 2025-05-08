@@ -1,0 +1,47 @@
+{
+    "roles": [
+        {
+            "name": "Admin",
+            "description": "Administrator role with all permissions",
+            "permissions": [
+                "admin.route.get.users",
+                "admin.route.delete.user",
+                "admin.route.create.user",
+                "admin.route.update.user",
+                "admin.route.get.tokens",
+                "admin.route.create.token",
+                "admin.route.delete.token",
+                "admin.route.ban.user",
+                "admin.route.unban.user"
+            ]
+        },
+        {
+            "name": "Moderator",
+            "description": "Moderator role with limited permissions",
+            "permissions": [
+                "admin.route.get.users",
+                "admin.route.ban.user",
+                "admin.route.get.tokens",
+                "admin.route.create.token"
+            ]
+        },
+        {
+            "name": "Uploader",
+            "description": "User with unlimited uploads",
+            "permissions": [
+                "file.route.upload.file"
+            ]
+        },
+        {
+            "name": "User",
+            "description": "Regular user role with limited permissions",
+            "permissions": [
+                "file.route.get.files",
+                "file.route.upload.file.limited",
+                "file.route.download.file",
+                "file.route.delete.file.limited",
+                "file.route.update.file.limited"
+            ]
+        }
+    ]
+}

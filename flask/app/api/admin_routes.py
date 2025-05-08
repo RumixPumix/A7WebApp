@@ -6,57 +6,38 @@ from app.models.token import RegistrationToken
 from datetime import datetime, timedelta
 import secrets
 import string
-
-
+from app.api.permissions_wrapper import permissions_wrapper
 # Define the blueprint
 admin_bp = Blueprint('admin_bp', __name__)
 
-def check_permission(current_user):
-    user = User.query.get(current_user)
-    if not user:
-        return None, (jsonify({"message": "You need to login first!"}), 401)
-    if not user.is_admin:
-        return None, (jsonify({"message": "Access denied"}), 403)
-    return user, None
-
 # Example route for the admin panel
 @admin_bp.route('/users', methods=['GET'])
-@jwt_required()
-def get_users():
+@permissions_wrapper('admin.route.get.users')
+def get_users(current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
-        
         users = User.query.all()
-        user_list = [{"id": u.id, "username": u.username, "last_login":u.last_login,"created_at":u.created_at ,"is_admin": u.is_admin} for u in users]
+        user_list = [{"id": u.id, "username": u.username, "last_login":u.last_login,"created_at":u.created_at ,"role": u.role} for u in users]
         return jsonify({
             "message": "Users retrieved successfully",
             "data": user_list
         }), 200
-    
-    
 
     except Exception as e:
         return jsonify({
             "message": str(e)
         }), 500
 
+
 @admin_bp.route('/user/<int:user_id>', methods=['DELETE'])
-@jwt_required()
-def delete_user(user_id):
+@permissions_wrapper('admin.route.delete.user')
+def delete_user(user_id, current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
-        
         if not user_id:
             return jsonify({
                 "status": False,
                 "message": "Incorrect format of JSON data - User ID is required"
             }), 400
+        
         user_to_delete = User.query.get(user_id)
         if not user_to_delete:
             return jsonify({
@@ -72,8 +53,6 @@ def delete_user(user_id):
         db.session.delete(user_to_delete)
         db.session.commit()
 
-        
-        #TODO : Implement user deletion logic
         return jsonify({
             "message": "User deleted successfully",
             "data": True
@@ -85,14 +64,9 @@ def delete_user(user_id):
         }), 500
 
 @admin_bp.route('/user', methods=['POST'])
-@jwt_required()
-def add_user():
+@permissions_wrapper('admin.route.create.user')
+def add_user(current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
-
         data = request.get_json()
         if not data:
             return jsonify({
@@ -130,14 +104,9 @@ def add_user():
         }), 500
 
 @admin_bp.route('/user/<int:user_id>', methods=['PUT'])
-@jwt_required()
+@permissions_wrapper('admin.route.update.user')
 def update_user(user_id):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
-
         user_to_update = User.query.get(user_id)
         if not user_to_update:
             return jsonify({
@@ -174,14 +143,9 @@ def update_user(user_id):
     
 
 @admin_bp.route('/tokens', methods=['GET'])
-@jwt_required()
-def get_tokens():
+@permissions_wrapper('admin.route.get.tokens')
+def get_tokens(current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
-        
         # Get all tokens with creator/user relationships
         tokens = RegistrationToken.query \
         .options(
@@ -223,13 +187,9 @@ def get_tokens():
         }), 500
 
 @admin_bp.route('/token', methods=['POST'])
-@jwt_required()
-def generate_token():
+@permissions_wrapper('admin.route.create.token')
+def generate_token(current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
         
         response = request.get_json()
         if not response:
@@ -256,7 +216,7 @@ def generate_token():
 
         new_token = RegistrationToken(
             token=token,
-            created_by=user.id,
+            created_by=current_user.id,
             days_valid=days_valid
         )
 
@@ -274,13 +234,9 @@ def generate_token():
     
 
 @admin_bp.route('/token/<int:token_id>', methods=['DELETE'])
-@jwt_required()
-def delete_token(token_id):
+@permissions_wrapper('admin.route.delete.token')
+def delete_token(token_id, current_user, permissions_status):
     try:
-        current_user = get_jwt_identity()
-        user, message = check_permission(current_user)
-        if message:
-            return message
         # Find the token
         token = RegistrationToken.query.get(token_id)
         if not token:
