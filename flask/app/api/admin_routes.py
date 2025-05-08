@@ -105,7 +105,7 @@ def add_user(current_user, permissions_status):
 
 @admin_bp.route('/user/<int:user_id>', methods=['PUT'])
 @permissions_wrapper('admin.route.update.user')
-def update_user(user_id):
+def update_user(user_id, current_user, permissions_status):
     try:
         user_to_update = User.query.get(user_id)
         if not user_to_update:
@@ -258,3 +258,67 @@ def delete_token(token_id, current_user, permissions_status):
         return jsonify({
             "message": str(e)
         }), 500
+    
+@admin_bp.route('/ban/<int:user_id>', methods=['POST'])
+@permissions_wrapper('admin.route.ban.user')
+def ban_user(user_id, current_user, permissions_status):
+    try:
+        user_to_ban = User.query.get(user_id)
+        if not user_to_ban:
+            return jsonify({
+                "message": "User not found"
+            }), 404
+
+        # Ban the user
+        user_to_ban.is_banned = True
+        user_to_ban.banned_by = current_user.id  # Set the user who banned
+        user_to_ban.ban_reason = request.json.get('reason', None)  # Optional reason for banning
+        db.session.commit()
+
+        return jsonify({
+            "message": "User banned successfully",
+            "data": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "message": str(e)
+        }), 500
+    
+@admin_bp.route('/unban/<int:user_id>', methods=['POST'])
+@permissions_wrapper('admin.route.unban.user', 'admin.route.unban.user.limited')
+def unban_user(user_id, current_user, permissions_status):
+    try:
+        user_to_unban = User.query.get(user_id)
+        if not user_to_unban:
+            return jsonify({"message": "User not found"}), 404
+
+        # Check permissions
+        has_full_unban = permissions_status.get('admin.route.unban.user', False)
+        has_limited_unban = permissions_status.get('admin.route.unban.user.limited', False)
+        
+        # Condition 1: User has full unban permission - can unban anyone
+        if has_full_unban:
+            pass  # Allow the unban
+        # Condition 2: User has limited unban AND was the one who banned the user
+        elif has_limited_unban and user_to_unban.banned_by == current_user.id:
+            pass  # Allow the unban
+        else:
+            return jsonify({
+                "message": "You do not have permission to unban this user"
+            }), 403
+
+        # Unban the user
+        user_to_unban.is_banned = False
+        user_to_unban.banned_by = None  # Clear the banned_by field
+        db.session.commit()
+
+        return jsonify({
+            "message": "User unbanned successfully",
+            "data": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500

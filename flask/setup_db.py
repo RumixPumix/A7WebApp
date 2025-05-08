@@ -53,7 +53,8 @@ def create_json_files():
                 "admin.route.delete.token", "admin.route.ban.user", "admin.route.unban.user"
             ]},
             {"name": "Moderator", "description": "Moderator role with limited permissions", "permissions": [
-                "admin.route.get.users", "admin.route.ban.user", "admin.route.get.tokens", "admin.route.create.token"
+                "admin.route.get.users", "admin.route.ban.user", "admin.route.get.tokens", "admin.route.create.token",
+                "admin.route.unban.user.limited"
             ]},
             {"name": "Uploader", "description": "User with unlimited uploads", "permissions": [
                 "file.route.upload.file"
@@ -219,12 +220,20 @@ def drop_and_recreate_tables(tables_to_recreate):
 
 def generate_default_users(app):
     with app.app_context():
+        roles = Role.query.all()
+        if not roles:
+            print("No roles found. Please ensure roles are set up before creating users.")
+            return
+        admin_role = next((role for role in roles if role.name == "Admin"), None)
+        moderator_role = next((role for role in roles if role.name == "Moderator"), None)
+        uploader_role = next((role for role in roles if role.name == "Uploader"), None)
+        user_role = next((role for role in roles if role.name == "User"), None)        
         if not User.query.filter_by(username="admin").first():
-                admin_user = User(username="admin")
+                admin_user = User(username="admin", role=admin_role)
                 admin_user.set_password("1234")
                 db.session.add(admin_user)
         if not User.query.filter_by(username="user").first():
-                regular_user = User(username="user")
+                regular_user = User(username="user", role=user_role)
                 regular_user.set_password("1234")
                 db.session.add(regular_user)
         db.session.commit()

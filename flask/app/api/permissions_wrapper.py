@@ -1,8 +1,8 @@
 from functools import wraps
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import jsonify
+from app.models.user import User
 from fnmatch import fnmatch
-from app.models.user import User  # Adjust path as needed
 
 def permissions_wrapper(*required_permissions):
     def decorator(f):
@@ -15,17 +15,23 @@ def permissions_wrapper(*required_permissions):
             if not user:
                 return jsonify({"message": "User not registered"}), 401
 
+            # Get user permissions (empty list if no role/permissions)
             user_perms = [p.name for p in user.role.permissions] if user.role else []
 
+            # Create complete permission status dictionary
             permissions_status = {
-                perm: any(fnmatch(perm, user_perm) for user_perm in user_perms)
-                for perm in required_permissions
+                required_perm: any(
+                    fnmatch(user_perm, required_perm) or 
+                    fnmatch(required_perm, user_perm)
+                    for user_perm in user_perms
+                )
+                for required_perm in required_permissions
             }
 
+            # Check if user has at least one required permission
             if not any(permissions_status.values()):
                 return jsonify({
-                    "message": "Insufficient permissions",
-                    "permissions_status": permissions_status
+                    "message": "Insufficient permissions"
                 }), 403
 
             return f(
