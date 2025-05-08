@@ -31,7 +31,9 @@ def create_json_files():
             {"name": "admin.route.ban.user", "description": "Ban a user"},
             {"name": "admin.route.unban.user", "description": "Unban a user"},
             {"name": "admin.route.unban.user.limited", "description": "Unban a user that only that user banned"},
-            {"name": "file.route.get.files", "description": "Get all files"},
+            {"name": "file.route.get.files", "description": "Get all files even private ones"},
+            {"name": "file.route.get.files.limited", "description": "Get files only that are publicly available"},
+            {"name": "file.route.get.private.files", "description": "Get your private files"},
             {"name": "file.route.upload.file", "description": "Upload a file with no restrictions"},
             {"name": "file.route.upload.file.limited", "description": "Upload a file with restrictions"},
             {"name": "file.route.download.file", "description": "Download a file"},
@@ -50,7 +52,9 @@ def create_json_files():
             {"name": "Admin", "description": "Administrator role with all permissions", "permissions": [
                 "admin.route.get.users", "admin.route.delete.user", "admin.route.create.user",
                 "admin.route.update.user", "admin.route.get.tokens", "admin.route.create.token",
-                "admin.route.delete.token", "admin.route.ban.user", "admin.route.unban.user"
+                "admin.route.delete.token", "admin.route.ban.user", "admin.route.unban.user", 
+                "file.route.get.files", "file.route.upload.file", "file.route.download.file",
+                "file.route.delete.file", "file.route.update.file"
             ]},
             {"name": "Moderator", "description": "Moderator role with limited permissions", "permissions": [
                 "admin.route.get.users", "admin.route.ban.user", "admin.route.get.tokens", "admin.route.create.token",
@@ -60,7 +64,7 @@ def create_json_files():
                 "file.route.upload.file"
             ]},
             {"name": "User", "description": "Regular user role with limited permissions", "permissions": [
-                "file.route.get.files", "file.route.upload.file.limited", "file.route.download.file",
+                "file.route.get.files.limited", "file.route.upload.file.limited", "file.route.download.file",
                 "file.route.delete.file.limited", "file.route.update.file.limited"
             ]},
         ]

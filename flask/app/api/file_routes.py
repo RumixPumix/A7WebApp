@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, send_from_directory, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.api.permissions_wrapper import permissions_wrapper
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import mimetypes
@@ -190,21 +191,21 @@ def verify_file_name(filename):
     return re.match(r'^[\w\-. ]+$', filename) is not None
 
 @file_bp.route('/list', methods=['GET'])
-@jwt_required()
-def get_files():
+@permissions_wrapper(['file.route.list', 'file.route.list.limited'])
+def get_files(current_user, permissions_status):
+    """Get all files from the database."""
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
         synchronize_filesystem_with_db()
 
-        # Get all files from database that are not private
-
-        #files = File.query.all()
-        if not user.is_admin:
+        if permissions_status['file.route.list.limited'] and not permissions_status['file.route.list']:
             files = File.query.filter_by(is_private=False).all()
-        else:
+        elif permissions_status['file.route.list']:
             files = File.query.all()
+        else:
+            return jsonify({
+                "message": "You do not have permission to view files",
+            }), 403
+
 
         if not files:
             return jsonify({
@@ -223,15 +224,16 @@ def get_files():
         }), 500
     
 @file_bp.route('/private', methods=['GET'])
-@jwt_required()
-def get_private_files():
+@permissions_wrapper(['file.route.get.private.files'])
+def get_private_files(current_user, permissions_status):
     """Get private files for a specific user."""
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
+        if not permissions_status['file.route.get.private.files']:
+            return jsonify({
+                "message": "You do not have permission to view private files",
+            }), 403
         
-        files = File.query.filter_by(uploaded_by=user.id, is_private=True).all()
+        files = File.query.filter_by(uploaded_by=current_user.id, is_private=True).all()
         if not files:
             return jsonify({
                 "message": "No private files found",
@@ -248,27 +250,25 @@ def get_private_files():
         }), 500
 
 @file_bp.route('/upload', methods=['POST'])
-@jwt_required()
-def upload_file():
+@permissions_wrapper(['file.route.upload', 'file.route.upload.limited'])
+def upload_file(current_user, permissions_status):
+    """Upload a file to the server."""
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
-        
         if 'file' not in request.files:
             return jsonify({
                 "message": "No file part in the request",
             }), 400
 
         file = request.files['file']
+
+        if not verify_file(file):
+            return jsonify({
+                "message": "Invalid file",
+            }), 400
+
         if not verify_file_name(file.filename):
             return jsonify({
                 "message": "Invalid file name"
-            }), 400
-        
-        if file.filename == '':
-            return jsonify({
-                "message": "No selected file"
             }), 400
 
         if not allowed_file(file.filename):
@@ -308,7 +308,7 @@ def upload_file():
         new_file = File(
             file_name=base_name,
             file_extension=extension[1:].lower(),
-            uploaded_by=user.id,
+            uploaded_by=current_user.id,
             file_size=file_size,
             file_path=filepath,
             mime_type=file_type,
