@@ -36,7 +36,10 @@ def create_json_files():
             {"name": "file.route.get.private.files", "description": "Get your private files"},
             {"name": "file.route.upload.file", "description": "Upload a file with no restrictions"},
             {"name": "file.route.upload.file.limited", "description": "Upload a file with restrictions"},
+            {"name": "file.route.upload.private.file", "description": "Upload a private file"},
+            {"name": "file.route.upload.private.file.limited", "description": "Upload a private file"},
             {"name": "file.route.download.file", "description": "Download a file"},
+            {"name": "file.route.download.file.limited", "description": "Download a file only that are publicly available"},
             {"name": "file.route.delete.file.limited", "description": "Delete a file only that user uploaded"},
             {"name": "file.route.delete.file", "description": "Delete any file"},
             {"name": "file.route.update.file", "description": "Update file information"},
@@ -64,7 +67,7 @@ def create_json_files():
                 "file.route.upload.file"
             ]},
             {"name": "User", "description": "Regular user role with limited permissions", "permissions": [
-                "file.route.get.files.limited", "file.route.upload.file.limited", "file.route.download.file",
+                "file.route.get.files.limited", "file.route.upload.file.limited", "file.route.download.file.limited",
                 "file.route.delete.file.limited", "file.route.update.file.limited"
             ]},
         ]
@@ -227,17 +230,15 @@ def generate_default_users(app):
         roles = Role.query.all()
         if not roles:
             print("No roles found. Please ensure roles are set up before creating users.")
-            return
-        admin_role = next((role for role in roles if role.name == "Admin"), None)
-        moderator_role = next((role for role in roles if role.name == "Moderator"), None)
-        uploader_role = next((role for role in roles if role.name == "Uploader"), None)
-        user_role = next((role for role in roles if role.name == "User"), None)        
+            return       
         if not User.query.filter_by(username="admin").first():
-                admin_user = User(username="admin", role=admin_role)
+                admin_user = User(username="admin")
                 admin_user.set_password("1234")
+                admin_user.set_role("Admin")
                 db.session.add(admin_user)
         if not User.query.filter_by(username="user").first():
-                regular_user = User(username="user", role=user_role)
+                regular_user = User(username="user")
+                regular_user.set_role("User")
                 regular_user.set_password("1234")
                 db.session.add(regular_user)
         db.session.commit()

@@ -4,6 +4,7 @@ from app import db
 from app.models.user import User
 from app.models.token import RegistrationToken
 from datetime import datetime, timedelta
+from app.models.role import Role
 import secrets
 import string
 from app.api.permissions_wrapper import permissions_wrapper
@@ -44,7 +45,9 @@ def delete_user(user_id, current_user, permissions_status):
                 "message": "User not found"
             }), 404
         
-        if user_to_delete.is_admin:
+        admin_role_id = Role.query.filter_by(name='Admin').first().id
+        
+        if user_to_delete.role == admin_role_id:
             return jsonify({
                 "message": "Cannot delete an admin user"
             }), 403
@@ -72,24 +75,27 @@ def add_user(current_user, permissions_status):
             return jsonify({
                 "message": "Invalid request data"
             }), 400
-        username_data = data.get('username', None)
-        password_data = data.get('password', None)
-        is_admin_data = data.get('is_admin', False)
-
-        if not username_data or not password_data:
+        
+        if not ('username' in data and 'password' in data):
             return jsonify({
                 "message": "Username and password are required"
             }), 400
+
+        username_data = data.get('username')
+        password_data = data.get('password')
+        role_data = data.get('role', 'User')
 
         # Check if username is already taken
         if User.query.filter_by(username=username_data).first():
             return jsonify({
                 "message": "Username already exists"
             }), 409
+        
 
-        new_user = User(username=username_data, is_admin=is_admin_data)
+
+        new_user = User(username=username_data, role=role_data)
         new_user.set_password(password_data)
-
+        new_user.set_role(role_data)  # Set the role for the new user
         db.session.add(new_user)
         db.session.commit()
 

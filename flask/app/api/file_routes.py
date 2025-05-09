@@ -18,11 +18,11 @@ file_bp = Blueprint('file_bp', __name__)
 
 UPLOAD_FOLDER = '/srv/files'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx', 'xlsx', 'pptx', 'zip', 'rar'}
-# Path to the JSON file
 UPLOADS_FILE = 'uploads.json'
 
+MAX_FILE_SIZE = 50 * 1024 * 1024 * 1024  # Max file size in bytes (50 GB)
+MAX_SIZE_PER_DAY_GB = 50 * 1024 * 1024 * 1024  # Max size per day in GB
 MAX_FILES_PER_HOUR = 10  # Max number of files per hour
-MAX_SIZE_PER_DAY_GB = 50  # Max size per day in GB
 
 def check_permission(current_user):
     user = User.query.get(current_user)
@@ -53,7 +53,7 @@ def synchronize_filesystem_with_db():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             
             # Skip directories and non-allowed files
-            if not os.path.isfile(filepath) or not allowed_file(filename):
+            if not os.path.isfile(filepath):
                 continue
 
             # If file exists in filesystem but not in DB
@@ -95,6 +95,25 @@ def synchronize_filesystem_with_db():
     finally:
         sync_lock.release()
 
+def verify_file(file):
+    if not file:
+        return False  # No file at all
+
+    # Sanitize and extract filename + extension
+    filename = secure_filename(file.filename)
+    if '..' in filename or filename.startswith('/'):
+        return False
+    ext = os.path.splitext(filename)[1].lower()
+
+    # Check if filename or extension is missing
+    if not filename or not ext:
+        return False
+
+    # Check extension
+    if ext not in ALLOWED_EXTENSIONS:
+        return False
+
+    return filename
 
 def load_uploads_data():
     try:
@@ -110,14 +129,29 @@ def load_uploads_data():
         print(f"Error loading uploads data: {str(e)}")
         return {}
 
-def save_uploads_data(data):
+def save_uploads_data(user_id, new_upload_data):
+    """Load current upload data, append new data, and save back to the JSON file."""
     try:
-        """Save the updated upload data back to the JSON file."""
+        # Load current data
+        data = load_uploads_data()
+
+        # Ensure the user has an entry in the data
+        if user_id not in data:
+            data[user_id] = {"uploads": []}
+
+        # Append the new upload data
+        data[user_id]["uploads"].append(new_upload_data)
+
+        # Save the updated data back to the file
         with open(UPLOADS_FILE, 'w') as file:
             json.dump(data, file, indent=4)
+    
     except Exception as e:
         print(f"Error saving uploads data: {str(e)}")
+        return False
 
+    return True
+    
 def check_upload_limits(user_id, file_size):
     """Check upload limits: 10 files per hour and 50GB per day."""
     data = load_uploads_data()
@@ -138,57 +172,10 @@ def check_upload_limits(user_id, file_size):
     today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     total_uploaded_size_today = sum(upload["size"] for upload in user_uploads if datetime.fromisoformat(upload["timestamp"]) > today_start)
 
-    if total_uploaded_size_today + file_size > MAX_SIZE_PER_DAY_GB * 1024 * 1024 * 1024:
+    if total_uploaded_size_today + file_size > MAX_SIZE_PER_DAY_GB:
         return False, "You have exceeded the maximum total upload size of 50 GB per day."
     
     return True, ""
-
-def check_and_upload_file(user_id, file):
-    """Checks if file can be uploaded based on rate limits and size, then uploads."""
-    try:
-        # Secure the filename and get file size
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        
-        try:
-            file.stream.seek(0, os.SEEK_END)
-            file_size = file.stream.tell()
-            file.stream.seek(0)
-        except Exception:
-            file_size = 0  # fallback to 0 if we can't determine size
-        
-        # Check if upload is allowed (rate limits and size limits)
-        is_allowed, message = check_upload_limits(user_id, file_size)
-        if not is_allowed:
-            return False, message
-        
-        # Save the file to the filesystem
-        file.save(filepath)
-
-        # Save upload metadata (timestamp and size)
-        timestamp = datetime.now().isoformat()
-        data = load_uploads_data()
-        if user_id not in data:
-            data[user_id] = {"uploads": []}
-        
-        data[user_id]["uploads"].append({"timestamp": timestamp, "size": file_size})
-        save_uploads_data(data)
-
-        return True, "File uploaded successfully"
-
-    except Exception as e:
-        print(f"File upload failed: {str(e)}")
-        return False, str(e)
-        
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def verify_file_name(filename):
-    # Check if the filename is valid (no special characters, etc.)
-    # This is a simple regex check; you can modify it as needed
-    return re.match(r'^[\w\-. ]+$', filename) is not None
 
 @file_bp.route('/list', methods=['GET'])
 @permissions_wrapper(['file.route.list', 'file.route.list.limited'])
@@ -250,84 +237,92 @@ def get_private_files(current_user, permissions_status):
         }), 500
 
 @file_bp.route('/upload', methods=['POST'])
-@permissions_wrapper(['file.route.upload', 'file.route.upload.limited'])
+@permissions_wrapper(['file.route.upload', 'file.route.upload.limited', 'file.route.upload.private.file', 'file.route.upload.private.file.limited'])
 def upload_file(current_user, permissions_status):
     """Upload a file to the server."""
     try:
         if 'file' not in request.files:
-            return jsonify({
-                "message": "No file part in the request",
-            }), 400
+            return jsonify({"message": "No file part in the request",}), 400
 
         file = request.files['file']
+        content_length = request.content_length
+        if content_length is None:
+            return jsonify({"message": "Content length not provided",}), 400
+        if content_length > MAX_FILE_SIZE:
+            return jsonify({"message": "File size exceeds the maximum limit of 50 GB",}), 400
+        filename = verify_file(file)
 
-        if not verify_file(file):
-            return jsonify({
-                "message": "Invalid file",
-            }), 400
-
-        if not verify_file_name(file.filename):
-            return jsonify({
-                "message": "Invalid file name"
-            }), 400
-
-        if not allowed_file(file.filename):
-            return jsonify({
-                "message": "File type not allowed"
-            }), 400
+        if not filename:
+            return jsonify({"message": "Invalid file",}), 400
         
+        base, ext = os.path.splitext(filename)
+
         # Get privacy setting from form data (default to False)
         is_private = request.form.get('isPrivate', 'false').lower() == 'true'
+        if is_private and not (permissions_status['file.route.upload.private.file'] or permissions_status['file.route.upload.private.file.limited']):
+            return jsonify({"message": "You do not have permission to upload private files",}), 403
         
-        # Secure the filename first
-        filename = secure_filename(file.filename)
-        base_name, extension = os.path.splitext(filename)
+        if is_private and not permissions_status['file.route.upload.private.file']:
+            status = check_upload_limits(current_user.id, content_length)
+            if not status[0]:
+                return jsonify({"message": status[1]}), 403
+
+        if not is_private and not permissions_status['file.route.upload']:
+            status = check_upload_limits(current_user.id, content_length)
+            if not status[0]:
+                return jsonify({"message": status[1]}), 403
         
         # Check for existing file before saving
         existing_file = File.query.filter_by(
-            file_name=base_name,
-            file_extension=extension[1:].lower()
+            file_name=base,
+            file_extension=ext[1:].lower()
         ).first()
 
         if existing_file:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{base_name}_{timestamp}{extension}"
+            filename = f"{base}_{timestamp}{ext}"
         
         # Save file first to get actual size
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        final_filename = f"{base}{ext}"
+        filepath = os.path.join(UPLOAD_FOLDER, final_filename)
+
+        # Save file
         file.save(filepath)  # Save the file first
         
         # Now get the actual file size
-        stat = os.stat(filepath)
-        file_size = stat.st_size
-        
-        # Get other metadata
-        file_type, _ = mimetypes.guess_type(filename)
+        file_size = os.stat(filepath).st_size
+        file_type, _ = mimetypes.guess_type(final_filename)
         
         # Create DB record
         new_file = File(
-            file_name=base_name,
-            file_extension=extension[1:].lower(),
+            file_name=base,
+            file_extension=ext[1:].lower(),
             uploaded_by=current_user.id,
             file_size=file_size,
             file_path=filepath,
             mime_type=file_type,
-            is_private=is_private,  # Use the parsed boolean value
+            is_private=is_private,
             description=request.form.get('description', '')
         )
 
         db.session.add(new_file)
         db.session.commit()
 
-        return jsonify({
-            "message": "File uploaded successfully",
-            "data": {
-                "id": new_file.id,
-                "name": filename,
-                "size": file_size,
-                "is_private": is_private
-            }
-        }), 201
+        upload_data = {
+            "timestamp": datetime.now().isoformat(),
+            "size": file_size
+        }
+
+        # Save the upload data
+        if save_uploads_data(current_user.id, upload_data):
+            return jsonify({
+                "message": "File uploaded successfully",
+                "data": True
+            }), 201
+        else:
+            return jsonify({
+                "message": "Failed to save upload data"
+            }), 500
 
     except Exception as e:
         db.session.rollback()
@@ -341,43 +336,48 @@ def upload_file(current_user, permissions_status):
         }), 500
 
 @file_bp.route('/download/<int:file_id>', methods=['GET'])
-@jwt_required()
-def download_file(file_id):
+@permissions_wrapper(['file.route.download', 'file.route.download.limited'])
+def download_file(file_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
         # Get file from database
-        file = File.query.get(file_id)
-        if not file:
-            abort(404, message="File not found")
+        file = File.query.get_or_404(file_id)
         
-        # Check if user has permission (example: private files)
-        if file.is_private and file.uploaded_by != get_jwt_identity():
-            abort(403, message="Access denied")
-        
-        # Check if file exists in filesystem
+        # Verify file exists on filesystem
         if not os.path.isfile(file.file_path):
             abort(404, message="File not found on server")
+
+        # Admin can download anything
+        if permissions_status['file.route.download']:
+            return _send_file(file)
+
+        if not permissions_status['file.route.download.limited']:
+            abort(403, message="No download permission")
+            
+        if file.is_private and file.uploaded_by != current_user.id:
+            abort(403, message="Access denied to private file")
         
-        return send_from_directory(
-            directory=os.path.dirname(file.file_path),
-            path=os.path.basename(file.file_path),
-            as_attachment=True,
-            mimetype=file.mime_type or 'application/octet-stream'
-        )
-    
+        return _send_file(file)
+
     except Exception as e:
         print(f"Download failed: {str(e)}")
         abort(500, message="Internal server error")
 
+def _send_file(file):
+    """Helper function to send file with proper headers"""
+    if not os.path.isfile(file.file_path):
+        abort(404, message="File not found on server")
+    
+    return send_from_directory(
+        directory=os.path.dirname(file.file_path),
+        path=os.path.basename(file.file_path),
+        as_attachment=True,
+        mimetype=file.mime_type or 'application/octet-stream'
+    )
+
 @file_bp.route('/delete/<int:file_id>', methods=['DELETE'])
-@jwt_required()
-def delete_file(file_id):
+@permissions_wrapper(['file.route.delete', 'file.route.delete.limited'])
+def delete_file(file_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
         
         # Get file from database
         file = File.query.get(file_id)
@@ -386,35 +386,21 @@ def delete_file(file_id):
                 "message": "File not found"
             }), 404
         
-        # Check permissions (admin or owner)
-        if not (user.is_admin or file.uploaded_by == user.id):
-            print(f"User {user.username} attempted to delete file {file_id} without permission.")
+        # Check permissions
+        if permissions_status['file.route.delete']:
+            return _delete_file(file)
+        
+        if not permissions_status['file.route.delete.limited']:
             return jsonify({
-                "message": "Permission denied"
+                "message": "You do not have permission to delete files",
             }), 403
-
-        # Delete from filesystem
-        if os.path.exists(file.file_path):
-            os.remove(file.file_path)
-        else:
-            print(f"File not found on disk: File ID: {file.id}, File Path: {file.file_path}")
-            print(f"User: {user.username} attempted to delete a file that does not exist on disk.")
-            print(f"Deleting file from DB: {file.to_dict()}")
-            db.session.delete(file)
-            db.session.commit()
+        
+        if file.is_private and file.uploaded_by != current_user.id:
             return jsonify({
-                "message": "File not found on disk - Contact admin rumix9866"
-            }), 500
-
+                "message": "You do not have permission to delete this file",
+            }), 403
         
-        # Delete from database
-        db.session.delete(file)
-        db.session.commit()
-        
-        return jsonify({
-            "message": "File deleted successfully",
-            "data": True
-        })
+        return _delete_file(file)
 
     except Exception as e:
         print(f"File deletion failed: {str(e)}")
@@ -422,3 +408,18 @@ def delete_file(file_id):
         return jsonify({
             "message": str(e)
         }), 500
+    
+def _delete_file(file):
+    """Helper function to delete file from filesystem and database."""
+    db.session.delete(file)
+    db.session.commit()
+    if os.path.exists(file.file_path):
+        os.remove(file.file_path)
+        return jsonify({
+            "message": "File deleted successfully",
+            "data": True
+        }), 200
+    else:
+        return jsonify({
+            "message": "File deleted - not found on disk",
+        }), 404

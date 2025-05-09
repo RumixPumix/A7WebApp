@@ -1,5 +1,6 @@
 from app import db, bcrypt
 from datetime import datetime
+from app.models.role import Role
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -20,3 +21,18 @@ class User(db.Model):
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password, password)
+    
+    def set_role(self, role_name):
+        """Set user's role by name. Defaults to 'User' if role not found."""
+        if not isinstance(role_name, str):
+            raise ValueError("Role name must be a string")
+            
+        role = Role.query.filter_by(name=role_name).first()
+        
+        if not role:  # If role doesn't exist, default to 'User'
+            role = Role.query.filter_by(name='User').first()
+            if not role:  # Safety check in case User role doesn't exist
+                raise ValueError("Default 'User' role not found in database")
+        
+        self.role = role
+        self.role_id = role.id
