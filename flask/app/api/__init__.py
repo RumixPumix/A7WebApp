@@ -5,9 +5,12 @@ from .dashboard_routes import dashboard_bp
 from .users_routes import users_bp
 from .forums_routes import forums_bp
 from .server_routes import server_bp
+from .misc_routes import misc_bp
 
 
 def register_routes(app):
+    """Register all API routes with the Flask app."""
+    app.register_blueprint(misc_bp)
     app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(file_bp, url_prefix='/api/files')

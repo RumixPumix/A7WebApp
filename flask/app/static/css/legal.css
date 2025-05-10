@@ -1,0 +1,101 @@
+/* legal.css - Styles for legal documents (privacy.html & terms.html) */
+
+/* Base Styles */
+.legal-container {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Headers */
+.legal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.legal-title {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    color: #7f8c8d;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Content Sections */
+.legal-section {
+    margin: 2rem 0;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: #34495e;
+    margin: 1.5rem 0 0.5rem;
+}
+
+/* Lists */
+.legal-list {
+    margin-left: 1.5rem;
+    padding-left: 0;
+}
+
+.legal-list li {
+    margin-bottom: 0.5rem;
+}
+
+/* Links */
+.legal-link {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.legal-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .legal-container {
+        padding: 1rem;
+    }
+    
+    .legal-title {
+        font-size: 1.6rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .legal-container {
+        font-size: 12pt;
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .legal-link {
+        color: #000;
+        text-decoration: underline;
+    }
+}

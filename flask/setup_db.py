@@ -77,55 +77,48 @@ def create_json_files():
         json.dump(roles_data, f, indent=4)
 
 def permissions_and_roles(app):
-    # Load permissions
-    try:
-        
-        with app.app_context():
-            with open('permissions.json', 'r') as f:
-                permissions_data = json.load(f)
-                for permission in permissions_data['permissions']:
-                    permission_obj = Permission.query.filter_by(name=permission['name']).first()
-                    if not permission_obj:
-                        permission_obj = Permission(name=permission['name'], description=permission['description'])
-                        db.session.add(permission_obj)
-            db.session.commit()
-    except FileNotFoundError:
-        print("permissions.json file not found. Skipping permissions setup.")
-        return
-    except json.JSONDecodeError:
-        print("Error decoding JSON from permissions.json. Skipping permissions setup.")
-        return
-    except Exception as e:
-        print(f"An unexpected error occurred while processing permissions: {e}")
-        return
-
-    # Load roles and assign permissions
     try:
         with app.app_context():
-            with open('roles.json', 'r') as f:
-                roles_data = json.load(f)
-                for role in roles_data['roles']:
-                    role_obj = Role.query.filter_by(name=role['name']).first()
-                    if not role_obj:
-                        role_obj = Role(name=role['name'], description=role['description'])
-                    # Clear existing permissions to avoid duplication or conflicts
-                    role_obj.permissions = []
+            # Load permissions
+            try:
+                with open('permissions.json', 'r') as f:
+                    permissions_data = json.load(f)
+                    for permission in permissions_data['permissions']:
+                        permission_obj = Permission.query.filter_by(name=permission['name']).first()
+                        if not permission_obj:
+                            permission_obj = Permission(name=permission['name'], description=permission['description'])
+                            db.session.add(permission_obj)
+                db.session.commit()
+            except FileNotFoundError:
+                print("permissions.json file not found. Skipping permissions setup.")
+                return
+            except json.JSONDecodeError:
+                print("Error decoding JSON from permissions.json. Skipping permissions setup.")
+                return
 
-                    for perm_name in role['permissions']:
-                        perm_obj = Permission.query.filter_by(name=perm_name).first()
-                        if perm_obj:
-                            role_obj.permissions.append(perm_obj)
-                        else:
-                            print(f"Warning: Permission '{perm_name}' not found in DB, skipping.")
-
-                    db.session.add(role_obj)
-            db.session.commit()
-    except FileNotFoundError:
-        print("roles.json file not found. Skipping roles setup.")
-    except json.JSONDecodeError:
-        print("Error decoding JSON from roles.json. Skipping roles setup.")
+            # Load roles and assign permissions
+            try:
+                with open('roles.json', 'r') as f:
+                    roles_data = json.load(f)
+                    for role in roles_data['roles']:
+                        role_obj = Role.query.filter_by(name=role['name']).first()
+                        if not role_obj:
+                            role_obj = Role(name=role['name'], description=role['description'])
+                        role_obj.permissions = []
+                        db.session.add(role_obj)  # Add to session first
+                        for perm_name in role['permissions']:
+                            perm_obj = Permission.query.filter_by(name=perm_name).first()
+                            if perm_obj:
+                                role_obj.permissions.append(perm_obj)
+                            else:
+                                print(f"Warning: Permission '{perm_name}' not found in DB, skipping.")
+                db.session.commit()
+            except FileNotFoundError:
+                print("roles.json file not found. Skipping roles setup.")
+            except json.JSONDecodeError:
+                print("Error decoding JSON from roles.json. Skipping roles setup.")
     except Exception as e:
-        print(f"An unexpected error occurred while processing roles: {e}")
+        print(f"An unexpected error occurred during permissions and roles setup: {e}")
 
 
 def check_and_create_database(engine, db_name):
@@ -232,12 +225,12 @@ def generate_default_users(app):
             print("No roles found. Please ensure roles are set up before creating users.")
             return       
         if not User.query.filter_by(username="admin").first():
-                admin_user = User(username="admin")
+                admin_user = User(username="admin", email="admin@ace7esports.com", email_verified=True)
                 admin_user.set_password("1234")
                 admin_user.set_role("Admin")
                 db.session.add(admin_user)
         if not User.query.filter_by(username="user").first():
-                regular_user = User(username="user")
+                regular_user = User(username="user", email="user@ace7esports.com", email_verified=True)
                 regular_user.set_role("User")
                 regular_user.set_password("1234")
                 db.session.add(regular_user)
@@ -268,7 +261,7 @@ def setup_database():
             db.create_all()
             print("Tables created successfully.")
             # Insert default users
-            generate_default_users()
+            #generate_default_users(app)
         else:
             for table in all_tables:
                 if not check_table_structure(inspector, table):

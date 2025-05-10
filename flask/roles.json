@@ -12,7 +12,12 @@
                 "admin.route.create.token",
                 "admin.route.delete.token",
                 "admin.route.ban.user",
-                "admin.route.unban.user"
+                "admin.route.unban.user",
+                "file.route.get.files",
+                "file.route.upload.file",
+                "file.route.download.file",
+                "file.route.delete.file",
+                "file.route.update.file"
             ]
         },
         {
@@ -22,7 +27,8 @@
                 "admin.route.get.users",
                 "admin.route.ban.user",
                 "admin.route.get.tokens",
-                "admin.route.create.token"
+                "admin.route.create.token",
+                "admin.route.unban.user.limited"
             ]
         },
         {
@@ -36,9 +42,9 @@
             "name": "User",
             "description": "Regular user role with limited permissions",
             "permissions": [
-                "file.route.get.files",
+                "file.route.get.files.limited",
                 "file.route.upload.file.limited",
-                "file.route.download.file",
+                "file.route.download.file.limited",
                 "file.route.delete.file.limited",
                 "file.route.update.file.limited"
             ]

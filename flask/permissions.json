@@ -42,7 +42,15 @@
         },
         {
             "name": "file.route.get.files",
-            "description": "Get all files"
+            "description": "Get all files even private ones"
+        },
+        {
+            "name": "file.route.get.files.limited",
+            "description": "Get files only that are publicly available"
+        },
+        {
+            "name": "file.route.get.private.files",
+            "description": "Get your private files"
         },
         {
             "name": "file.route.upload.file",
@@ -53,8 +61,20 @@
             "description": "Upload a file with restrictions"
         },
         {
+            "name": "file.route.upload.private.file",
+            "description": "Upload a private file"
+        },
+        {
+            "name": "file.route.upload.private.file.limited",
+            "description": "Upload a private file"
+        },
+        {
             "name": "file.route.download.file",
             "description": "Download a file"
+        },
+        {
+            "name": "file.route.download.file.limited",
+            "description": "Download a file only that are publicly available"
         },
         {
             "name": "file.route.delete.file.limited",
