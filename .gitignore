@@ -13,6 +13,7 @@ flask-a7-virt
 dist
 dist-ssr
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
