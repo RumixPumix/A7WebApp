@@ -14,7 +14,7 @@ import './userManagementStyle.css'; // Assuming you have a CSS file for styling
 import Spinner from '../../../ModularComponents/spinner.jsx'; // your spinner component
 import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // your last updated component
 
-function UserManagementTab() {
+function UserManagementTab(userInfo) {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showTokenModal, setShowTokenModal] = useState(false);
@@ -64,7 +64,7 @@ function UserManagementTab() {
   useEffect(() => {
       const interval = setInterval(() => {
         if (lastUpdated && (Date.now() - lastUpdated) > 30000) {
-          setLoading({ users: true, tokens: true });
+          //setLoading({ users: true, tokens: true });
           loadUsersData();
           loadTokensData();
         }
@@ -88,7 +88,6 @@ function UserManagementTab() {
       ...(!editingUser && { password: formData.get('password') })
     };
 
-    console.log(userData);
 
     try {
       setLoading((prev) => ({ ...prev, users: true }));

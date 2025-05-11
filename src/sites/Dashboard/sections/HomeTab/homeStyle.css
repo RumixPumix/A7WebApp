@@ -264,10 +264,6 @@
     background: #3498db;
   }
   
-  .node-icon.secondary {
-    background: #9b59b6;
-  }
-  
   .node-status {
     display: block;
     font-size: 0.75rem;

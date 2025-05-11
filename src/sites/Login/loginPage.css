@@ -181,6 +181,103 @@
     animation: spin 1s ease-in-out infinite;
 }
 
+/* Add these to your existing CSS */
+.terms-agreement {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--light-text);
+    user-select: none;
+}
+
+.terms-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--light-text);
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.terms-checkbox:hover input ~ .checkmark {
+    border-color: var(--primary-color);
+}
+
+.terms-checkbox input:checked ~ .checkmark {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.terms-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.terms-checkbox .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.terms-text {
+    margin-left: 5px;
+}
+
+.terms-text a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.terms-text a:hover {
+    text-decoration: underline;
+}
+
+.footer-text {
+    margin: 0.5rem 0;
+    color: var(--light-text);
+    font-size: 0.85rem;
+}
+
+.footer-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }

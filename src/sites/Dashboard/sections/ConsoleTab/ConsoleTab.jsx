@@ -1,7 +1,7 @@
 import React from 'react';
 import './consoleStyle.css'; // Assuming you have a CSS file for styling
 
-function ConsoleTab() {
+function ConsoleTab({userInfo}) {
   return (
     <div className="console-container">
       <div className="console-header">

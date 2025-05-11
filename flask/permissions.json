@@ -5,10 +5,6 @@
             "description": "Get all users"
         },
         {
-            "name": "admin.route.delete.user",
-            "description": "Delete a user"
-        },
-        {
             "name": "admin.route.create.user",
             "description": "Create a new user"
         },
@@ -37,60 +33,180 @@
             "description": "Unban a user"
         },
         {
-            "name": "admin.route.unban.user.limited",
-            "description": "Unban a user that only that user banned"
+            "name": "admin.route.unban.user.all",
+            "description": "Unban all users (admin only)"
         },
         {
-            "name": "file.route.get.files",
-            "description": "Get all files even private ones"
+            "name": "dashboard.route.live",
+            "description": "View live dashboard"
         },
         {
-            "name": "file.route.get.files.limited",
-            "description": "Get files only that are publicly available"
+            "name": "dashboard.route.home",
+            "description": "View dashboard home"
+        },
+        {
+            "name": "dashboard.route.all",
+            "description": "View all dashboard data"
+        },
+        {
+            "name": "file.route.list",
+            "description": "List all files"
+        },
+        {
+            "name": "file.route.list.all",
+            "description": "List all files across all users"
         },
         {
             "name": "file.route.get.private.files",
             "description": "Get your private files"
         },
         {
-            "name": "file.route.upload.file",
-            "description": "Upload a file with no restrictions"
+            "name": "file.route.upload",
+            "description": "Upload a file"
         },
         {
-            "name": "file.route.upload.file.limited",
-            "description": "Upload a file with restrictions"
+            "name": "file.route.upload.nolimit",
+            "description": "Upload a file without size restrictions"
         },
         {
             "name": "file.route.upload.private.file",
             "description": "Upload a private file"
         },
         {
-            "name": "file.route.upload.private.file.limited",
-            "description": "Upload a private file"
+            "name": "file.route.upload.private.file.nolimit",
+            "description": "Upload a private file without restrictions"
         },
         {
-            "name": "file.route.download.file",
+            "name": "file.route.download",
             "description": "Download a file"
         },
         {
-            "name": "file.route.download.file.limited",
-            "description": "Download a file only that are publicly available"
+            "name": "file.route.download.all",
+            "description": "Download all files including private"
         },
         {
-            "name": "file.route.delete.file.limited",
-            "description": "Delete a file only that user uploaded"
+            "name": "file.route.delete",
+            "description": "Delete a file"
         },
         {
-            "name": "file.route.delete.file",
-            "description": "Delete any file"
+            "name": "file.route.delete.all",
+            "description": "Delete any file regardless of owner"
         },
         {
-            "name": "file.route.update.file",
-            "description": "Update file information"
+            "name": "forum.routes.get.posts",
+            "description": "Get all forum posts"
         },
         {
-            "name": "file.route.update.file.limited",
-            "description": "Update file information only that user uploaded"
+            "name": "forum.routes.get.post",
+            "description": "Get a specific forum post"
+        },
+        {
+            "name": "forum.routes.create.post",
+            "description": "Create a new forum post"
+        },
+        {
+            "name": "forum.routes.update.post",
+            "description": "Update a forum post"
+        },
+        {
+            "name": "forum.routes.update.post.all",
+            "description": "Update any forum post"
+        },
+        {
+            "name": "forum.routes.delete.post",
+            "description": "Delete a forum post"
+        },
+        {
+            "name": "forum.routes.delete.post.all",
+            "description": "Delete any forum post"
+        },
+        {
+            "name": "forum.routes.like.post",
+            "description": "Like a forum post"
+        },
+        {
+            "name": "forum.routes.dislike.post",
+            "description": "Dislike a forum post"
+        },
+        {
+            "name": "forum.routes.create.comment",
+            "description": "Create a comment on a post"
+        },
+        {
+            "name": "server.routes.get",
+            "description": "Get own server information"
+        },
+        {
+            "name": "server.routes.get.all",
+            "description": "Get all servers information"
+        },
+        {
+            "name": "server.routes.create",
+            "description": "Create a server"
+        },
+        {
+            "name": "server.routes.create.nolimit",
+            "description": "Create a server with no limits"
+        },
+        {
+            "name": "server.routes.delete",
+            "description": "Delete a server"
+        },
+        {
+            "name": "server.routes.delete.all",
+            "description": "Delete any server"
+        },
+        {
+            "name": "server.routes.update",
+            "description": "Update server information"
+        },
+        {
+            "name": "server.routes.update.all",
+            "description": "Update any server"
+        },
+        {
+            "name": "server.routes.start",
+            "description": "Start a server"
+        },
+        {
+            "name": "server.routes.start.all",
+            "description": "Start any server"
+        },
+        {
+            "name": "server.routes.stop",
+            "description": "Stop a server"
+        },
+        {
+            "name": "server.routes.stop.all",
+            "description": "Stop any server"
+        },
+        {
+            "name": "server.routes.restart",
+            "description": "Restart a server"
+        },
+        {
+            "name": "server.routes.restart.all",
+            "description": "Restart any server"
+        },
+        {
+            "name": "server.routes.plugins",
+            "description": "Manage server plugins"
+        },
+        {
+            "name": "server.routes.logs.all",
+            "description": "Get logs for all servers"
+        },
+        {
+            "name": "server.routes.logs",
+            "description": "Get logs for your server"
+        },
+        {
+            "name": "server.routes.send_command.all",
+            "description": "Send command to any server"
+        },
+        {
+            "name": "server.routes.send_command",
+            "description": "Send command to your server"
         }
     ]
 }

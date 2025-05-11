@@ -3,7 +3,6 @@ import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
 
 export default async function postServer(serverData) {
-  console.log('postServer', serverData); // Log the server data for debugging
   try {
     const response = await fetch(`${config.baseURL}/api/server/create`, {
     method: 'POST', // Use POST method to create a new server

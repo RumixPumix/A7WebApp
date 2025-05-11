@@ -20,7 +20,7 @@ import LastUpdated from '../../../ModularComponents/lastUpdated.jsx';
 import ServerConsole from './ServerConsole/serverConsole.jsx'
 import './serversStyle.css';
 
-function ServersTab({ isAdmin, currentUserId }) {
+function ServersTab({ userInfo }) {
   const [loading, setLoading] = useState({ servers: true });
   const [servers, setServers] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -122,6 +122,44 @@ function ServersTab({ isAdmin, currentUserId }) {
     }
   };
 
+  const handleInputChangeSeed = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      // Only allow letters (a-zA-Z), numbers (0-9), and hyphens (-)
+      const validatedValue = value.replace(/[^0-9]/g, '');
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: validatedValue
+      }));
+    }
+  };
+
+  const handleInputChangeEasy = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      // Only allow letters (a-zA-Z), numbers (0-9), and hyphens (-)
+      const validatedValue = value.replace(/[^a-zA-Z0-9- ]/g, '');
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: validatedValue
+      }));
+    }
+  };
+
   const handleRamChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -139,12 +177,12 @@ function ServersTab({ isAdmin, currentUserId }) {
       return;
     }
     try {
+      setShowModal(false);
       if (modalMode === 'edit') {
         await postServer({ ...formData, id: currentServer.id });
       } else {
         await postServer(formData);
       }
-      setShowModal(false);
       loadServers();
     } catch (error) {
 
@@ -161,7 +199,10 @@ function ServersTab({ isAdmin, currentUserId }) {
   };
 
   if (serverConsole) {
-    return <ServerConsole server={serverConsole} />
+    return <ServerConsole 
+      server={serverConsole} 
+      onBack={() => setServerConsole(null)} 
+    />
   }
 
   if (loading.servers) {
@@ -189,7 +230,7 @@ function ServersTab({ isAdmin, currentUserId }) {
             />
           </div>
           
-          {isAdmin && (
+          {userInfo.is_admin && (
             <button className="btn btn-primary" onClick={openCreateModal}>
               <FontAwesomeIcon icon={faPlay} /> Deploy New Server
             </button>
@@ -201,7 +242,7 @@ function ServersTab({ isAdmin, currentUserId }) {
         <div className="empty-state">
           <FontAwesomeIcon icon={faInfoCircle} size="2x" />
           <p>No servers found</p>
-          {isAdmin && (
+          {userInfo.is_admin && (
             <button className="btn btn-primary" onClick={openCreateModal}>
               Deploy your first server
             </button>
@@ -213,14 +254,14 @@ function ServersTab({ isAdmin, currentUserId }) {
             <div 
               key={server.id} 
               className={`server-card ${server.status}`}
-              onClick={() => (isAdmin || server.owner_id === currentUserId) && setServerConsole(server)}
+              onClick={() => (userInfo.is_admin || server.owner_id === userInfo.user_id) && setServerConsole(server)}
             >
               <div className="card-header">
                 <div className="server-status">
                   <div className="status-indicator"></div>
                   <span>{server.status.toUpperCase()}</span>
                 </div>
-                {(isAdmin || server.owner_id === currentUserId) && (
+                {(userInfo.is_admin || server.owner_id === userInfo.user_id) && (
                   <button 
                     className="btn-icon danger"
                     onClick={(e) => handleDeleteServer(server.id, e)}
@@ -276,7 +317,7 @@ function ServersTab({ isAdmin, currentUserId }) {
                   <span>Owner: {server.owner_username || 'Unknown'}</span>
                 </div>
                 
-                {(isAdmin || server.owner_id === currentUserId) && (
+                {(userInfo.is_admin || server.owner_id === userInfo.user_id) && (
                   <div className="server-actions">
                     <button 
                       className="btn-icon"
@@ -316,7 +357,7 @@ function ServersTab({ isAdmin, currentUserId }) {
                   
                     <button 
                       className="btn-icon"
-                      onClick={() => (isAdmin || server.owner_id === currentUserId) && openEditModal(server)}
+                      onClick={() => (userInfo.is_admin || server.owner_id === userInfo.user_id) && openEditModal(server)}
                       disabled={server.status === 'starting' || server.status === 'stopping'}
                       title="Configure Server"
                     >
@@ -373,7 +414,7 @@ function ServersTab({ isAdmin, currentUserId }) {
                   id="server-description"
                   name="description"
                   value={formData.description}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeEasy}
                   maxLength={140}
                   placeholder="Short description of your server"
                 />
@@ -388,7 +429,7 @@ function ServersTab({ isAdmin, currentUserId }) {
                   id="server-version"
                   name="version" 
                   value={formData.version}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                   required
                 >
                   {minecraftVersions.map(version => (
@@ -406,7 +447,7 @@ function ServersTab({ isAdmin, currentUserId }) {
                   type="text"
                   name="seed"
                   value={formData.seed}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeSeed}
                   placeholder="Leave blank for random"
                 />
               </div>

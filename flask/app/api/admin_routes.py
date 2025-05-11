@@ -1,9 +1,7 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.user import User
 from app.models.token import RegistrationToken
-from datetime import datetime, timedelta
 from app.models.role import Role
 import secrets
 import string
@@ -17,13 +15,14 @@ admin_bp = Blueprint('admin_bp', __name__)
 def get_users(current_user, permissions_status):
     try:
         users = User.query.all()
-        user_list = [{"id": u.id, "username": u.username, "last_login":u.last_login,"created_at":u.created_at ,"role": u.role} for u in users]
+        user_list = [{"id": u.id, "username": u.username, "last_login":u.last_login,"created_at":u.created_at ,"role": u.role.name if u.role else None} for u in users]
         return jsonify({
             "message": "Users retrieved successfully",
             "data": user_list
         }), 200
 
     except Exception as e:
+        print(f"Error retrieving users: {e}")
         return jsonify({
             "message": str(e)
         }), 500
@@ -127,10 +126,10 @@ def update_user(user_id, current_user, permissions_status):
         
         new_username = response.get('username', user_to_update.username)
         new_password = response.get('password', None)
-        new_is_admin = response.get('role', user_to_update.is_admin)
+        new_role = response.get('role', user_to_update.role)
 
         user_to_update.username = new_username
-        user_to_update.is_admin = new_is_admin
+        user_to_update.role = new_role
 
         if new_password:
             user_to_update.set_password(new_password)
@@ -293,7 +292,7 @@ def ban_user(user_id, current_user, permissions_status):
         }), 500
     
 @admin_bp.route('/unban/<int:user_id>', methods=['POST'])
-@permissions_wrapper('admin.route.unban.user', 'admin.route.unban.user.limited')
+@permissions_wrapper('admin.route.unban.user', 'admin.route.unban.user.all')
 def unban_user(user_id, current_user, permissions_status):
     try:
         user_to_unban = User.query.get(user_id)
@@ -301,19 +300,12 @@ def unban_user(user_id, current_user, permissions_status):
             return jsonify({"message": "User not found"}), 404
 
         # Check permissions
-        has_full_unban = permissions_status.get('admin.route.unban.user', False)
-        has_limited_unban = permissions_status.get('admin.route.unban.user.limited', False)
-        
-        # Condition 1: User has full unban permission - can unban anyone
-        if has_full_unban:
-            pass  # Allow the unban
-        # Condition 2: User has limited unban AND was the one who banned the user
-        elif has_limited_unban and user_to_unban.banned_by == current_user.id:
-            pass  # Allow the unban
-        else:
-            return jsonify({
-                "message": "You do not have permission to unban this user"
-            }), 403
+        if not permissions_status.get('admin.route.unban.user.all'):
+            if user_to_unban.id == current_user.id:
+                return jsonify({"message": "You cannot unban yourself!"}), 403
+            if user_to_unban.banned_by != current_user.id:
+                return jsonify({"message": "You are not authorized to unban this user!"}), 403
+
 
         # Unban the user
         user_to_unban.is_banned = False

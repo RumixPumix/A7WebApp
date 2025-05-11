@@ -1,58 +1,112 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { io } from 'socket.io-client';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import './serverConsoleStyle.css';
+import sendCommand from './ServerConsoleAPI/sendCommand';
+import getLog from './ServerConsoleAPI/getLog';
 
-const ServerConsole = ({ server }) => {
+const ServerConsole = ({ server, onBack }) => {
   const [logs, setLogs] = useState([]);
   const [command, setCommand] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const socketRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   const consoleEndRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const [commandHistory, setCommandHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
-  useEffect(() => {
-    socketRef.current = io('http://localhost:5000/servers', {
-      transports: ['websocket'],
-      reconnection: true
-    });
 
-    const socket = socketRef.current;
-
-    socket.on('connect', () => {
-      setConnectionStatus('connected');
-      socket.emit('join_server', { server_id: server.id });
-    });
-
-    socket.on('disconnect', () => setConnectionStatus('disconnected'));
-    socket.on('connect_error', () => setConnectionStatus('error'));
-    socket.on('server_output', (data) => {
-      if (data.server_id === server.id) {
-        setLogs(prev => [...prev.slice(-500), data.output]);
+  // Function to fetch logs from server
+  const fetchLogs = useCallback(async () => {
+    try {
+      const logs = await getLog(server.id);
+      if (logs) {
+        setLogs(logs);
+        setConnectionStatus('connected');
       }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
+      else {
+        setConnectionStatus('disconnected');
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      console.error('Error fetching logs:', error);
+    }
   }, [server.id]);
 
+  // Function to send command to server
+  const handleSendCommand = async (e) => {
+    e.preventDefault();
+    if (!command.trim() || connectionStatus !== 'connected') return;
+
+    try {
+      setIsLoading(true);
+      const result = await sendCommand(command, server.id);
+      if (result) {
+        setCommandHistory(prev => [...prev, command].slice(-50)); // Keep last 50 commands
+        setHistoryIndex(-1);
+        await fetchLogs();
+      } else {
+        setConnectionStatus('error');
+      }
+      setCommand('');
+    } catch (error) {
+      console.error('Error sending command:', error);
+      setConnectionStatus('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+useEffect(() => {
+  if (connectionStatus === 'disconnected') {
+    const timeout = setTimeout(() => {
+      fetchLogs();
+    }, 5000); // Try to reconnect every 5 seconds if disconnected
+    return () => clearTimeout(timeout);
+  }
+}, [connectionStatus, fetchLogs]);
+
+  // Set up polling for logs
+useEffect(() => {
+  let isMounted = true;
+
+  const safeFetchLogs = async () => {
+    try {
+      const logs = await getLog(server.id);
+      if (isMounted) {
+        if (logs) {
+          setLogs(logs);
+          setConnectionStatus('connected');
+        } else {
+          setConnectionStatus('disconnected');
+        }
+      }
+    } catch (error) {
+      if (isMounted) {
+        setConnectionStatus('error');
+        console.error('Error fetching logs:', error);
+      }
+    }
+  };
+
+  safeFetchLogs();
+  pollingIntervalRef.current = setInterval(safeFetchLogs, 2000);
+
+  return () => {
+    isMounted = false;
+    clearInterval(pollingIntervalRef.current);
+  };
+}, [server]);
+
+  // Auto-scroll to bottom when logs update
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
-  const handleSendCommand = (e) => {
-    e.preventDefault();
-    if (command.trim() && connectionStatus === 'connected') {
-      socketRef.current.emit('server_command', {
-        server_id: server.id,
-        command: command
-      });
-      setCommand('');
-    }
-  };
-
   return (
     <div className="server-console-modal">
       <div className="server-modal-header">
+        <button className="back-button" onClick={onBack}>
+            ← Back to servers
+        </button>
         <h3>Server Console: {server.name}</h3>
         <div className={`server-status ${connectionStatus}`}>
           <span className="status-indicator"></span>
@@ -84,16 +138,30 @@ const ServerConsole = ({ server }) => {
             placeholder={connectionStatus === 'connected' 
               ? "Enter server command..." 
               : "Connect to server first"}
-            disabled={connectionStatus !== 'connected'}
+            disabled={connectionStatus !== 'connected' || isLoading}
+            onKeyDown={(e) => {
+              // Arrow up/down for command history
+              if (e.key === 'ArrowUp' && commandHistory.length > 0) {
+                e.preventDefault();
+                const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+                setHistoryIndex(newIndex);
+                setCommand(commandHistory[commandHistory.length - 1 - newIndex]);
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const newIndex = Math.max(historyIndex - 1, -1);
+                setHistoryIndex(newIndex);
+                setCommand(newIndex === -1 ? '' : commandHistory[commandHistory.length - 1 - newIndex]);
+              }
+            }}
           />
         </div>
         <div className="form-actions">
           <button 
             type="submit" 
             className="btn btn-primary"
-            disabled={connectionStatus !== 'connected' || !command.trim()}
+            disabled={connectionStatus !== 'connected' || !command.trim() || isLoading}
           >
-            Send Command
+            {isLoading ? 'Sending...' : 'Send Command'}
           </button>
         </div>
       </form>

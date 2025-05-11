@@ -37,3 +37,8 @@ def privacy_policy():
 def terms_of_service():
     """Render the terms of service page."""
     return render_template('terms/terms.html'), 200
+
+@misc_bp.route('/contact', methods=['GET'])
+def contact():
+    """Render the contact page."""
+    return render_template('contact/contact.html'), 200

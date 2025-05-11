@@ -29,7 +29,6 @@ export default async function handleResponse(response, customShow = true) {
     let data;
     try {
         data = await response.json();
-        console.log(data);
         if (data?.message) {
             notification(data.message, 'error');
             throw new Error(data.message);
@@ -37,13 +36,16 @@ export default async function handleResponse(response, customShow = true) {
     } catch (error) {
         throw new Error(error);
     }
-    console.log("Somehow we reached me?")
 
     switch (response.status) {
         case 400:
             throw new Error('Invalid request data'); // No need for data.message
         case 401:
-            throw new Error('Token expired or invalid. Please re-login.');
+            if (showNotification && customShow) {
+                notification('Token expired or invalid. Please re-login.', 'error');
+            }
+            setTimeout(() => window.location.reload(), 1000); // 1 second delay
+            break;
         case 403:
             throw new Error('Forbidden. You do not have permission to perform this action.');
         case 404:

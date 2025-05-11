@@ -20,7 +20,7 @@ import ProgressBar from '../../../ModularComponents/progressBar.jsx';
 
 import './filesStyle.css';
 
-function FilesTab({ isAdmin }) {
+function FilesTab({ userInfo }) {
   const [loading, setLoading] = useState({ files: true });
   const [files, setFiles] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -36,8 +36,8 @@ function FilesTab({ isAdmin }) {
 
   async function loadFiles() {
     if (loadingRef.current) return;
-    loadingRef.current = true;
-    setLoading({ files: true });
+    //loadingRef.current = true;
+    //setLoading({ files: true });
     setError(null);
     
     try {
@@ -81,7 +81,6 @@ function FilesTab({ isAdmin }) {
     const file = event.target.files[0];
     if (!file) return;
     
-    //setLoading({ files: true });
     setUploadProgress(0);
     
     try {
@@ -102,7 +101,6 @@ function FilesTab({ isAdmin }) {
   };
 
   const handleFileDownload = async (fileId) => {
-    //setLoading({ files: true });
     setDownloadProgress(0);
     
     try {
@@ -116,7 +114,6 @@ function FilesTab({ isAdmin }) {
       setError(error.message);
     } finally {
       setDownloadProgress(0);
-      //setLoading({ files: false });
     }
   };
 
@@ -287,7 +284,7 @@ function FilesTab({ isAdmin }) {
                         <FontAwesomeIcon icon={faFileDownload} />
                       </button>
                     )}
-                    {(isAdmin || (file.author || file.uploadedBy) === currentUserId) && (
+                    {(userInfo.is_admin || (file.author || file.uploadedBy) === currentUserId) && (
                       <button 
                         className="ft-btn-icon ft-danger"
                         onClick={() => handleFileDelete(file.id)}

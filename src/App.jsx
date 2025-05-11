@@ -9,7 +9,6 @@ import Loading from './sites/ModularComponents/spinner';
 function App() {
     const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(true);
-    console.debug("App component rendered");
     useEffect(() => {
         async function checkUser() {
             const user = await validateAndFetchUser();
@@ -42,7 +41,7 @@ function App() {
                 />
                 <Route 
                     path="/dashboard" 
-                    element={userInfo ? <Dashboard userInfo={userInfo} /> : <Navigate to="/login" replace />} 
+                    element={userInfo ? <Dashboard/> : <Navigate to="/login" replace />} 
                 />
             </Routes>
         </Router>

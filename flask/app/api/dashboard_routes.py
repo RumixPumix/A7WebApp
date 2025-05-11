@@ -6,67 +6,16 @@ import shutil
 import platform
 import psutil
 from datetime import datetime, timedelta
+from app.api.permissions_wrapper import permissions_wrapper
+from app.models.server import Server
+from app.models.role import Role
+import subprocess
+import re
+from sqlalchemy import or_
+import time
 
 
 dashboard_bp = Blueprint('dashboard_bp', __name__)
-
-# Mock server management class instead of using global mutable list
-class ServerManager:
-    def __init__(self):
-        self.servers = [
-            {
-                "id": 1,
-                "name": "Main Server",
-                "status": "online",
-                "cpu": 45,
-                "memory": 62
-            },
-            {
-                "id": 2,
-                "name": "Backup Server",
-                "status": "offline",
-                "cpu": 0,
-                "memory": 0
-            }
-        ]
-
-    def list_servers(self):
-        return self.servers
-
-    def get_server(self, server_id):
-        return next((s for s in self.servers if s["id"] == server_id), None)
-
-    def perform_action(self, server_id, action):
-        server = self.get_server(server_id)
-
-        if not server:
-            return None, f"Server with ID {server_id} not found."
-
-        if action == 'start':
-            server['status'] = 'online'
-            server['cpu'] = 10   # Simulated new usage
-            server['memory'] = 20
-        elif action == 'stop':
-            server['status'] = 'offline'
-            server['cpu'] = 0
-            server['memory'] = 0
-        elif action == 'restart':
-            server['status'] = 'restarting'
-            server['cpu'] = 0
-            server['memory'] = 0
-        else:
-            return None, f"Invalid action: {action}."
-
-        return server, None
-
-
-server_manager = ServerManager()
-
-def check_permission(current_user):
-    user = User.query.get(current_user)
-    if not user:
-        return None, (jsonify({"message": "You need to login first!"}), 401)
-    return user, None
 
 
 def getMotivationalQuote():
@@ -84,145 +33,159 @@ def getMotivationalQuote():
     ]
     return random.choice(motivational_quotes)
 
-def getSystemHealth():
-    # Simulated system health check
-    return round(random.uniform(0, 100), 2)  # Random percentage
+def getSystemHealth(storage, cpu_usage, mem_usage):
+    """
+    Calculate overall system health as a weighted percentage (0-100).
+    Higher is better. Weights:
+    - Disk usage: 40%
+    - CPU usage: 30%
+    - Memory usage: 30%
+    """
+    try:
+        # Ensure all inputs are valid
+        print(f"Storage: {storage}, CPU Usage: {cpu_usage}, Memory Usage: {mem_usage}")
+        
+        # Calculate individual health scores (0-100, higher is better)
+        # Disk health (inverse of usage percentage)
+        disk_health = 100 - storage['aggregated']['storagePercent']
+        
+        # CPU health (inverse of usage percentage)
+        cpu_health = 100 - cpu_usage
+        
+        # Memory health (inverse of usage percentage)
+        mem_health = 100 - mem_usage
+        
+        # Apply weights
+        weighted_score = (
+            (disk_health * 0.40) +
+            (cpu_health * 0.30) +
+            (mem_health * 0.30)
+        )
+        
+        # Ensure score is within bounds
+        final_score = max(0, min(100, weighted_score))
+        
+        return round(final_score, 2)
+        
+    except Exception as e:
+        print(f"Error calculating system health: {e}")
+        return 0  # Return minimum health on failure
 
+    
+#Server storage functions
 
 def get_disk_path():
     """Returns the correct root disk path based on the OS."""
     system = platform.system().lower()
     if system == "windows":
-        return "C:\\"
+        # On Windows, we should check all available drives
+        import string
+        from ctypes import windll
+        drives = []
+        bitmask = windll.kernel32.GetLogicalDrives()
+        for letter in string.ascii_uppercase:
+            if bitmask & 1:
+                drives.append(f"{letter}:\\")
+            bitmask >>= 1
+        return drives
     else:  # Linux, macOS, etc.
-        return "/"
+        return ["/"]  # Return as list for consistency
 
-def getServerStoragePercent():
+def getServerStoragePercent(disk_path):
     """Returns actual disk usage percentage (0-100)."""
-    disk_path = get_disk_path()
-    usage = shutil.disk_usage(disk_path)
-    return round((usage.used / usage.total) * 100, 2)
+    try:
+        usage = shutil.disk_usage(disk_path)
+        return round((usage.used / usage.total) * 100, 2)
+    except Exception as e:
+        print(f"Error getting disk usage for {disk_path}: {e}")
+        return 0
 
-def getServerStorageUsed():
+def getServerStorageUsed(disk_path):
     """Returns used storage in GB."""
-    disk_path = get_disk_path()
-    usage = shutil.disk_usage(disk_path)
-    return round(usage.used / (1024 ** 3), 2)  # Bytes → GB
+    try:
+        usage = shutil.disk_usage(disk_path)
+        return round(usage.used / (1024 ** 3), 2)  # Bytes → GB
+    except Exception as e:
+        print(f"Error getting disk usage for {disk_path}: {e}")
+        return 0
 
-def getServerStorageTotal():
+def getServerStorageTotal(disk_path):
     """Returns total storage in GB."""
-    disk_path = get_disk_path()
-    usage = shutil.disk_usage(disk_path)
-    return round(usage.total / (1024 ** 3), 2)  # Bytes → GB
+    try:
+        usage = shutil.disk_usage(disk_path)
+        return round(usage.total / (1024 ** 3), 2)  # Bytes → GB
+    except Exception as e:
+        print(f"Error getting disk usage for {disk_path}: {e}")
+        return 0
 
-def calculateUptimePercentage():
-    # Simulated uptime percentage
-    return round(random.uniform(0, 100), 2)  # Random percentage
+def getStorage():
+    drives = {}
+    all_disks = get_disk_path()
+    total_used = 0
+    total_size = 0
+    
+    for disk_path in all_disks:
+        try:
+            disk_total = getServerStorageTotal(disk_path)
+            disk_used = getServerStorageUsed(disk_path)
+            
+            drives[disk_path] = {
+                "total": disk_total,
+                "used": disk_used,
+                "percent": getServerStoragePercent(disk_path),
+            }
+            
+            total_used += disk_used
+            total_size += disk_total
+            
+        except Exception as e:
+            print(f"Error processing disk {disk_path}: {e}")
+            continue
 
-def getSecurityAlertCount():
-    # Simulated security alert count
-    return random.randint(0, 2)  # Random number of alerts
+    # Return both individual drives and aggregated data
+    return {
+        "drives": drives,  # Detailed info for each drive
+        "aggregated": {
+            "storageTotal": round(total_size, 2),
+            "storageUsed": round(total_used, 2),
+            "storagePercent": round((total_used / total_size * 100), 2) if total_size > 0 else 0,
+        }
+    }
 
 def getCpuUsage():
     """Returns system-wide CPU usage percentage."""
-    return round(psutil.cpu_percent(interval=0.5), 2)
+    return round(psutil.cpu_percent(interval=1), 2)
 
 def getMemoryUsage():
     """Returns RAM usage percentage."""
     return round(psutil.virtual_memory().percent, 2)
 
 
-def getResponse():
-    # Simulated response time
-    return round(random.uniform(0, 500), 2)  # Random milliseconds
+def getServerNodes(server_list):
+    servers = Server.query.all()
+    print(f"{servers}")
+    online_servers = [s for s in servers if s.status == 'online']
+    server_list['server_nodes'] = []
+    server_list['total'] = len(servers)
+    server_list['online'] = len(online_servers)
+    server_list['offline'] = len(servers) - len(online_servers)
+    for server in servers:
+        server_list["server_nodes"].append(server.to_dict())
+    return server_list
 
-def getRequests():
-    # Simulated number of requests
-    return random.randint(0, 1000)  # Random number of requests
-
-def getSecurity():
-    # Simulated security score
-    return round(random.uniform(0, 100), 2)  # Random percentage
-
-def getPerformance():
-    # Simulated performance score
-    return round(random.uniform(0, 100), 2)  # Random percentage
-
-def getStability():
-    # Simulated stability score
-    return round(random.uniform(0, 100), 2)  # Random percentage
-
-def getServerNodes():
-    server_manager = ServerManager()
-    return server_manager.list_servers()  # Returns the list of servers
-
-def getUserActivityData():
-    # Simulated user activity data
-    return [
-        {"day": "2023-10-01", "activity": 20},
-        {"day": "2023-10-02", "activity": 30},
-        {"day": "2023-10-03", "activity": 50},
-        {"day": "2023-10-04", "activity": 70},
-        {"day": "2023-10-05", "activity": 90}
-    ]
-
-def getStorageBreakdown():
-    # Simulated storage breakdown with percent included
-    drives = [
-        {"type": "SSD", "name": "Solid State Drive", "used": 500, "total": 1000},
-        {"type": "HDD", "name": "Hard Disk Drive", "used": 300, "total": 800}
-    ]
-
-    for d in drives:
-        if d["total"] > 0:
-            d["percent"] = round((d["used"] / d["total"]) * 100, 2)
-        else:
-            d["percent"] = 0.0
-
-    return drives
-
-def getRecentActivity():
-    # Simulated recent activity
-    return [
-        {"user": "User1", "action": "Logged in", "timestamp": datetime.utcnow()},
-        {"user": "User2", "action": "Uploaded a file", "timestamp": datetime.utcnow()},
-        {"user": "User3", "action": "Deleted a file", "timestamp": datetime.utcnow()}
-    ]
-
-def getPerformanceTips():
-    # Simulated performance tips
-    return [
-        "Optimize your database queries.",
-        "Use caching to speed up response times.",
-        "Minimize HTTP requests.",
-        "Use a Content Delivery Network (CDN).",
-        "Optimize images and other media."
-    ]
-
-def getRecommendations():
-    # Simulated recommendations
-    return [
-        "Consider upgrading your server hardware.",
-        "Implement a backup strategy.",
-        "Regularly update your software and dependencies.",
-        "Monitor your server performance regularly.",
-        "Implement security best practices."
-    ]
+def getCurrentWebsiteStatus():
+    # Simulated website status TODO: Implement actual website status check logic
+    return "local"  # online, offline, maintenance, local
 
 @dashboard_bp.route('/live', methods=['GET'])
-@jwt_required()
-def live():
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
-    
+@permissions_wrapper(['dashboard.route.live', 'dashboard.route.all'])
+def live(current_user, permissions_status):
+
     try:
         data = {
             "performanceMetrics": {
                 "cpu": getCpuUsage(), #Number
                 "memory": getMemoryUsage(), #Number
-                "responseTime": getResponse(), #Number
-                "requests": getRequests(), #Number
             }
         }
         return jsonify({
@@ -234,60 +197,94 @@ def live():
             "message": str(e)
         }), 500
 
+
+def timed_call(label, func):
+    start = time.perf_counter()
+    result = func()
+    end = time.perf_counter()
+    print(f"[Timer] {label}: {(end - start) * 1000:.2f} ms")
+    return result
+
 @dashboard_bp.route('/home', methods=['GET'])
-@jwt_required()
-def get_home():
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper(['dashboard.route.home', 'dashboard.route.all'])
+def get_home(current_user, permissions_status):
+    start_time = time.perf_counter()
 
     try:
-        data = {
-            "motivationalQuote": getMotivationalQuote(), #Single string
-            "systemHealth": getSystemHealth(), #Number
-            "serverStats": {
-                "total": len(server_manager.servers),
-                "storagePercent": getServerStoragePercent(), #Number
-                "storageUsed": getServerStorageUsed(), #Number
-                "storageTotal": getServerStorageTotal(), #Number
-                "online": len([s for s in server_manager.servers if s["status"] == "online"]),
-                "uptime": calculateUptimePercentage(),  # Should be a percentage
-                "securityAlerts": getSecurityAlertCount(), #Number
-            },
-            "userStats": {
-                "totalUsers": User.query.count(),
-                "newUsers": User.query.filter(User.created_at >= datetime.utcnow() - timedelta(days=1)).count(),
-                "activeToday": User.query.filter(User.last_login >= datetime.utcnow() - timedelta(days=1)).count(),
-                "adminUsers": User.query.filter_by(is_admin=True).count(),
-            },
-            "performanceMetrics": {
-                "cpu": getCpuUsage(), #Number
-                "memory": getMemoryUsage(), #Number
-                "responseTime": getResponse(), #Number
-                "requests": getRequests(), #Number
-            },
-            "systemHealthMetrics": {
-                "security": getSecurity(), #Number
-                "performance": getPerformance(), #Number
-                "stability": getStability(), #Number
-            },
-            "serverNodes": getServerNodes(),  # Should return array of server objects
-            "userActivityChart": getUserActivityData(),  # Array of percentages
-            "storageBreakdown": getStorageBreakdown(),  # Array of storage type objects
-            "recentActivity": getRecentActivity(),  # Array of activity objects
-            "performanceTips": getPerformanceTips(),  # Array of strings
-            "recommendations": getRecommendations(),
-        }
+        # Website status
+        version = "1.0.0"
+        status = timed_call("getCurrentWebsiteStatus", getCurrentWebsiteStatus)
 
+        # Misc
+        motivational_quote = timed_call("getMotivationalQuote", getMotivationalQuote)
+
+        # User stats
+        total_users = timed_call("User.query.count", lambda: User.query.count())
+        new_users = timed_call("User.query.newUsers", lambda: User.query.filter(
+            User.created_at >= datetime.utcnow() - timedelta(days=1)).count())
+        active_today = timed_call("User.query.activeToday", lambda: User.query.filter(
+            User.last_login >= datetime.utcnow() - timedelta(days=1)).count())
+        admin_users = timed_call("User.query.adminUsers", lambda: User.query.join(User.role).filter(
+            or_(
+                Role.name == "Admin",
+                Role.name == "Moderator"
+            )
+        ).count())
+
+
+        # Performance metrics
+        cpu_usage = timed_call("getCpuUsage", getCpuUsage)
+        memory_usage = timed_call("getMemoryUsage", getMemoryUsage)
+
+
+        # Storage
+        storage = timed_call("getStorage", getStorage)
+
+        system_health = timed_call("getSystemHealth", lambda: getSystemHealth(storage, cpu_usage, memory_usage))
+        
+        # Server Nodes
+        def server_nodes_wrapper():
+            return getServerNodes({
+                "website": {
+                    "version": version,
+                    "status": status,
+                },
+                "misc": {
+                    "motivationalQuote": motivational_quote,
+                    "systemHealth": system_health,
+                },
+                "userStats": {
+                    "totalUsers": total_users,
+                    "newUsers": new_users,
+                    "activeToday": active_today,
+                    "adminUsers": admin_users,
+                },
+                "performanceMetrics": {
+                    "cpu": cpu_usage,
+                    "memory": memory_usage,
+                },
+                "storage": storage,
+            })
+
+        data = timed_call("getServerNodes", server_nodes_wrapper)
+
+        # Total duration
+        end_time = time.perf_counter()
+        duration_ms = round((end_time - start_time) * 1000, 2)
+        print(f"[Timer] Total Duration: {duration_ms} ms")
 
         return jsonify({
             "message": "Welcome to the dashboard!",
-            "data": data
+            "data": data,
+            "responseDurationMs": duration_ms
         }), 200
+
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({
             "message": str(e)
         }), 500
+
 
 @dashboard_bp.route('/check_token', methods=['POST'])
 @jwt_required()

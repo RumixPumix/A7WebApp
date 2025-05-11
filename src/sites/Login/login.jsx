@@ -5,7 +5,6 @@ import sendLoginInformation from "./loginAPI/loginPOST";
 import sendRegistrationInformation from "./loginAPI/registerPOST";
 import "./loginPage.css";
 import validateAndFetchUser from "../../API/validateAndFetchUser";
-import notification from "../ModularComponents/notification";
 
 function InputField({ type, placeholder, value, onChange, disabled, icon, name }) {
     return (
@@ -29,6 +28,8 @@ function LoginPage({ setUserInfo }) {
     const [activeTab, setActiveTab] = useState("login");
     const [formData, setFormData] = useState({ username: "", password: "", token: "" });
     const [loading, setLoading] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -40,6 +41,11 @@ function LoginPage({ setUserInfo }) {
 
         const { username, password, token } = formData;
         const isRegistering = activeTab === "register";
+
+        if (activeTab === "register" && !agreeToTerms) {
+            popup("Error", "You must agree to the Terms of Service and Privacy Policy to register.");
+            return;
+        }
 
         if (!username.trim() || !password.trim() || (isRegistering && !token.trim())) {
             popup("Error", "Please fill in all fields.");
@@ -132,14 +138,37 @@ function LoginPage({ setUserInfo }) {
                 </div>
 
                 <div className="auth-footer">
-                    {activeTab === "login" ? "Don't have an account? " : "Already have an account? "}
-                    <button
-                        className="switch-btn"
-                        onClick={() => setActiveTab(activeTab === "login" ? "register" : "login")}
-                        disabled={loading}
-                    >
-                        {activeTab === "login" ? "Register" : "Login"}
-                    </button>
+                    {activeTab === "register" && (
+                        <div className="terms-agreement">
+                            <label className="terms-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={agreeToTerms}
+                                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                                    disabled={loading}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="terms-text">
+                                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                                </span>
+                            </label>
+                        </div>
+                    )}
+                    
+                    <p className="footer-text">Need help? <a href="/support" className="footer-link">Contact Support</a></p>
+                    <p className="footer-text">
+                        {activeTab === "login" ? "Don't have an account? " : "Already have an account? "}
+                        <button
+                            className="switch-btn"
+                            onClick={() => {
+                                setActiveTab(activeTab === "login" ? "register" : "login");
+                                setAgreeToTerms(false);
+                            }}
+                            disabled={loading}
+                        >
+                            {activeTab === "login" ? "Register" : "Login"}
+                        </button>
+                    </p>
                 </div>
             </div>
         </div>

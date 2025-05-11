@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSignOutAlt, faServer, faUsers, faFileUpload, faFileDownload,
-  faComments, faTerminal, faChartLine, faCog, faBell,
+  faComments, faTerminal, faCog, faBell,
   faHouse
 } from '@fortawesome/free-solid-svg-icons';
 import './dashboardStyle.css';
@@ -15,11 +15,11 @@ import FilesTab from './sections/FilesTab/FilesTab';
 import ForumsTab from './sections/ForumsTab/ForumsTab';
 import ConsoleTab from './sections/ConsoleTab/ConsoleTab';
 import HomeTab from './sections/HomeTab/HomeTab';
-import AnalyticsTab from './sections/AnalyticsTab/AnalyticsTab';
 import Messages from './top-icons/Messages/Messages';
 import Settings from './top-icons/Settings/Settings';
+import getUserInfo from './utils/getUserInfo';
 
-function Dashboard({ userInfo }) {
+function Dashboard() {
     const [activeTab, setActiveTab] = useState(() => {
         return localStorage.getItem('activeTab') || 'home';
     });
@@ -30,9 +30,7 @@ function Dashboard({ userInfo }) {
     const [showMessages, setShowMessages] = useState(false);
     const navigate = useNavigate();
 
-    const isAdmin = userInfo?.is_admin === "true"; // make sure it's a boolean
-    const username = userInfo?.username;
-    const userId = userInfo?.user_id;
+    const userInfo = getUserInfo();
 
     useEffect(() => {
         let isMounted = true;
@@ -77,30 +75,28 @@ function Dashboard({ userInfo }) {
     const renderActiveTab = () => {
         localStorage.setItem('activeTab', activeTab);
         switch (activeTab) {
-            case 'servers': return <ServersTab isAdmin={isAdmin} />;
-            case 'userManagement': return <UserManagementTab />;
-            case 'files': return <FilesTab isAdmin={isAdmin} currentUserId={userId} />;
-            case 'forums': return <ForumsTab />;
-            case 'console': return <ConsoleTab />;
-            case 'analytics': return <AnalyticsTab />;
-            case 'home': return <HomeTab isAdmin={isAdmin}/>;
-            default: return <HomeTab />;
+            case 'servers': return <ServersTab userInfo={userInfo} />;
+            case 'userManagement': return <UserManagementTab userInfo={userInfo} />;
+            case 'files': return <FilesTab userInfo={userInfo} />;
+            case 'forums': return <ForumsTab userInfo={userInfo} />;
+            case 'console': return <ConsoleTab userInfo={userInfo} />;
+            case 'home': return <HomeTab userInfo={userInfo} />;
+            default: return <HomeTab userInfo={userInfo} />;
         }
     };
 
     const tabs = [
         { key: 'home', label: 'Home', icon: faHouse, adminOnly: false, showLoading: null },
         { key: 'servers', label: 'Servers', icon: faServer, adminOnly: false, showLoading: 'servers' },
-        { key: 'files', label: isAdmin ? 'File Manager' : 'Files', icon: isAdmin ? faFileUpload : faFileDownload, adminOnly: false, showLoading: 'files' },
+        { key: 'files', label: userInfo.is_admin ? 'File Manager' : 'Files', icon: userInfo.is_admin ? faFileUpload : faFileDownload, adminOnly: false, showLoading: 'files' },
         { key: 'forums', label: 'Community Forum', icon: faComments, adminOnly: false, showLoading: 'forum' },
         { key: 'console', label: 'Console', icon: faTerminal, adminOnly: true, showLoading: null },
         { key: 'userManagement', label: 'User Management', icon: faUsers, adminOnly: true, showLoading: 'users' },
-        { key: 'analytics', label: 'Analytics', icon: faChartLine, adminOnly: true, showLoading: null },
     ];
 
     const renderTabs = () => (
         tabs.map(tab => {
-            if (tab.adminOnly && !isAdmin) return null;
+            if (tab.adminOnly && !userInfo.is_admin) return null;
             return (
                 <div 
                     key={tab.key}
@@ -121,10 +117,10 @@ function Dashboard({ userInfo }) {
                 <div className="sidebar-header">
                     <h2>Ace7 Panel</h2>
                     <div className="user-info">
-                        <div className="user-avatar">{username?.charAt(0).toUpperCase()}</div>
+                        <div className="user-avatar">{userInfo.username?.charAt(0).toUpperCase()}</div>
                         <div>
-                            <p className="username">{username}</p>
-                            <p className="user-role">{isAdmin ? 'Administrator' : 'User'}</p>
+                            <p className="username">{userInfo.username}</p>
+                            <p className="user-role">{userInfo.role}</p>
                         </div>
                     </div>
                 </div>
@@ -190,3 +186,4 @@ function Dashboard({ userInfo }) {
 }
 
 export default Dashboard;
+

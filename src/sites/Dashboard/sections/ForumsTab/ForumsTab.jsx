@@ -20,9 +20,7 @@ import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // Assumin
 import './forumsStyle.css'; // Your CSS file for styling
 
 
-//TODO discrepancy between forums and files, currentuser with attributes or separate if user is admin
-
-function ForumsTab( isAdmin, currentUserId) {
+function ForumsTab(userInfo) {
   const [loading, setLoading] = useState({ forum: true });
   const [forumPosts, setForumPosts] = useState([]);
   const [filteredForumPosts, setFilteredForumPosts] = useState([]);
@@ -56,7 +54,7 @@ function ForumsTab( isAdmin, currentUserId) {
   useEffect(() => {
     const interval = setInterval(() => {
       if (lastUpdated && (Date.now() - lastUpdated) > 30000) {
-        setLoading({ forum: true });
+        //setLoading({ forum: true });
         loadForumPosts();
       }
     }, 1000);
@@ -319,7 +317,7 @@ function ForumsTab( isAdmin, currentUserId) {
                 <div className="post-header">
                     <h4>{post.title}</h4>
                     <span className="post-type">{post.post_type}</span>
-                    {(isAdmin || post.author?.id === currentUserId) && (
+                    {(userInfo.is_admin || post.author?.id === userInfo.user_id) && (
                     <div className="post-controls">
                     <button
                     className="btn-icon"

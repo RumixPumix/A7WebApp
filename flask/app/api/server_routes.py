@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from random import randint
 import requests
 from datetime import datetime
@@ -8,7 +7,8 @@ from app.models.user import User
 from app.models.server import Server
 from app.models.plugin import Plugin
 from app.models.serverplugin import ServerPlugin
-from app.server_handler import start_server, stop_server, restart_server, send_command, get_server_status
+from app.api.permissions_wrapper import permissions_wrapper
+from app.server_handler import start_server, stop_server, restart_server, send_command, get_server_status, get_server_logs
 
 server_bp = Blueprint('server_bp', __name__)
 
@@ -23,11 +23,6 @@ def get_random_free_port():
 def get_random_seed():
     return str(randint(1000000000, 9999999999))
 
-def check_permission(current_user):
-    user = User.query.get(current_user)
-    if not user:
-        return None, (jsonify({"message": "You need to login first!"}), 401)
-    return user, None
 
 def get_paper_versions():
     try:
@@ -58,16 +53,16 @@ def synchronize_servers():
 
     
 @server_bp.route('/servers', methods=['GET'])
-@jwt_required()
-def get_servers():
+@permissions_wrapper(['server.routes.get'], ['server.routes.get.all'])
+def get_servers(current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
                 
         synchronize_servers()
         
         servers = Server.query.all()
+
+        if not permissions_status.get('server.routes.get.all'):
+            servers = [server for server in servers if server.owner_id == current_user.id]
 
         data = {
             "servers": [server.to_dict() for server in servers],
@@ -100,12 +95,8 @@ def verify_server_seed(seed):
     pass
 
 @server_bp.route('/create', methods=['POST'])
-@jwt_required()
-def create_server():
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
-    
+@permissions_wrapper(['server.routes.create', 'server.routes.create.nolimit'])
+def create_server(current_user, permissions_status):
     data = request.get_json()
     if not data:
         return jsonify({"message": "No data provided"}), 400
@@ -114,8 +105,8 @@ def create_server():
             if server.name == data.get('name'):
                 return jsonify({"message": "Server name already exists"}), 400
     
-    if not user.is_admin:
-        servers_owned = Server.query.filter_by(owner_id=user.id).all()
+    if not permissions_status.get('server.routes.create.nolimit'):
+        servers_owned = Server.query.filter_by(owner_id=current_user.id).all()
         if len(servers_owned) >= 3:
             return jsonify({"message": "You have reached the maximum number of servers allowed"}), 403
         
@@ -136,7 +127,7 @@ def create_server():
             return jsonify({"message": "Server name is required"}), 400
         server = Server(
             name=data.get('name'),
-            owner_id=user.id,
+            owner_id=current_user.id,
             version=data.get('version', '1.21.1'),
             path="/servers/" + data.get('name'),
             port=get_random_free_port(),
@@ -161,19 +152,16 @@ def create_server():
     
 
 @server_bp.route('/delete/<int:server_id>', methods=['DELETE'])
-@jwt_required()
-def delete_server(server_id):
+@permissions_wrapper(['server.routes.delete', 'server.routes.delete.all'])
+def delete_server(server_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
-
         server = Server.query.get(server_id)
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if not (server.owner_id == user.id or user.is_admin):
-            return jsonify({"message": "You do not have permission to delete this server"}), 403
+        if not permissions_status.get('server.routes.delete.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to delete this server"}), 403
         
         result = stop_server(server)
 
@@ -192,13 +180,10 @@ def delete_server(server_id):
         }), 500
 
 @server_bp.route('/update', methods=['POST'])
-@jwt_required()
-def update_server():
+@permissions_wrapper(['server.routes.update', 'server.routes.update.all'])
+def update_server(current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
-        
+
         server_id = request.args.get('id')
         if not server_id:
             return jsonify({"message": "No server ID provided"}), 400
@@ -206,15 +191,14 @@ def update_server():
         server = Server.query.get(server_id)
         if not server:
             return jsonify({"message": "Server not found"}), 404
-        
-        if not (server.owner_id == user.id or user.is_admin):
-            return jsonify({"message": "You do not have permission..."}), 403
 
         data = request.get_json()
         if not data:
             return jsonify({"message": "No data provided"}), 400
         
-        #Generate a name maker, essentially a hash of the user id and when it was created
+        if not permissions_status.get('server.routes.update.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to update this server"}), 403
 
         for key, value in data.items():
             setattr(server, key, value)
@@ -234,19 +218,16 @@ def update_server():
     
 
 @server_bp.route('/start/<int:server_id>', methods=['POST'])
-@jwt_required()
-def start_server_route(server_id):
+@permissions_wrapper(['server.routes.start', 'server.routes.start.all'])
+def start_server_route(server_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
-        
         server = Server.query.get(server_id)
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if not(server.owner_id == user.id or user.is_admin):
-            return jsonify({"message": "You do not have permission to start this server"}), 403
+        if not permissions_status.get('server.routes.start.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to start this server"}), 403
 
         result = start_server(server)
 
@@ -259,19 +240,16 @@ def start_server_route(server_id):
         }), 500
     
 @server_bp.route('/stop/<int:server_id>', methods=['POST'])
-@jwt_required()
-def stop_server_route(server_id):
+@permissions_wrapper(['server.routes.stop', 'server.routes.stop.all'])
+def stop_server_route(server_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
-        
         server = Server.query.get(server_id)
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if not(server.owner_id == user.id or user.is_admin):
-            return jsonify({"message": "You do not have permission to stop this server"}), 403
+        if not permissions_status.get('server.routes.stop.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to stop this server"}), 403
 
         result = stop_server(server)
 
@@ -284,19 +262,17 @@ def stop_server_route(server_id):
         }), 500
     
 @server_bp.route('/restart/<int:server_id>', methods=['POST'])
-@jwt_required()
-def restart_server_route(server_id):
+@permissions_wrapper(['server.routes.restart', 'server.routes.restart.all'])
+def restart_server_route(server_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
         
         server = Server.query.get(server_id)
         if not server:
             return jsonify({"message": "Server not found"}), 404
         
-        if not(server.owner_id == user.id or user.is_admin):
-            return jsonify({"message": "You do not have permission to restart this server"}), 403
+        if not permissions_status.get('server.routes.restart.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to restart this server"}), 403
 
         result = restart_server(server)
 
@@ -308,13 +284,73 @@ def restart_server_route(server_id):
             'data': False
         }), 500
     
-@server_bp.route('/plugins', methods=['GET'])
-@jwt_required()
-def get_plugins():
+@server_bp.route('/send_command/<int:server_id>', methods=['POST'])
+@permissions_wrapper(['server.routes.send_command', 'server.routes.send_command.all'])
+def send_command_route(server_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
+        server = Server.query.get(server_id)
+        if not server:
+            return jsonify({"message": "Server not found"}), 404
+        
+        if not server.status == "online":
+            return jsonify({"message": "Server is not online"}), 400
+        
+        if not permissions_status.get('server.routes.send_command.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to send commands to this server"}), 403
+
+        data = request.get_json()
+        command = data.get('command')
+        if not command:
+            return jsonify({"message": "Command is required"}), 400
+
+        result = send_command(server, command)
+
+        return jsonify(result), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'message': str(e),
+            'data': False
+        }), 500
+    
+@server_bp.route('/servers/<int:server_id>/logs', methods=['GET'])
+@permissions_wrapper(['server.routes.logs', 'server.routes.logs.all'])
+def server_logs(server_id, current_user, permissions_status):
+    try:
+        server = Server.query.get(server_id)
+        if not server:
+            return jsonify({"message": "Server not found"}), 404
+        
+        if not server.status == "online":
+            return jsonify({"message": "Server is not online"}), 400
+        
+        if not permissions_status.get('server.routes.logs.all'):
+            if server.owner_id != current_user.id:
+                return jsonify({"message": "You do not have permission to access logs for this server"}), 403
+
+        try:
+            logs = get_server_logs(server.id)
+        except Exception as e:
+            return jsonify({"message": "Error retrieving logs: " + str(e)}), 500
+        
+        return jsonify({
+            'data': logs,
+            'message': "Logs retrieved successfully",
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'message': str(e),
+            'data': False
+        }), 500
+    
+@server_bp.route('/plugins', methods=['GET'])
+@permissions_wrapper(['server.routes.plugins'])
+def get_plugins(current_user, permissions_status):
+    try:
+        if not permissions_status.get('server.routes.plugins'):
+            return jsonify({"message": "You do not have permission to access plugins"}), 403
+
         plugins = Plugin.query.all()
         return jsonify({
             'data': [plugin.to_dict() for plugin in plugins],

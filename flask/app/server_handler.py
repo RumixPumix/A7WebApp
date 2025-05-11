@@ -8,7 +8,12 @@ import platform
 import atexit
 from typing import Dict, List, Optional, Tuple, Any
 from app.models.server import Server  # Assuming you have a Server model defined in models.py
-from app import socketio
+from collections import deque
+
+# Add this near your other server management variables
+server_log_buffers = {}  # server_id -> deque
+log_buffer_lock = threading.Lock()
+MAX_LOG_LINES = 500  # Keep last 500 lines in memory
 
 # Configure logging
 logging.basicConfig(
@@ -104,7 +109,10 @@ def _monitor_server_output(server: Server, process: subprocess.Popen):
     Thread function to monitor server output
     """
     try:
-        #Verify what the hell is going on here:
+        # Initialize log buffer for this server
+        with log_buffer_lock:
+            server_log_buffers[server.id] = deque(maxlen=MAX_LOG_LINES)
+        
         log_path = os.path.join(server.path, 'logs', 'latest.log')
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         
@@ -114,10 +122,15 @@ def _monitor_server_output(server: Server, process: subprocess.Popen):
                 if output == '' and process.poll() is not None:
                     break
                 if output:
+                    output = output.strip()
                     timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-                    log_line = f"{timestamp} {output.strip()}\n"
+                    log_line = f"{timestamp} {output}\n"
                     log_file.write(log_line)
-                    logger.info(f"[Server {server.id}] {output.strip()}")
+                    logger.info(f"[Server {server.id}] {output}")
+                    
+                    # Add to in-memory buffer
+                    with log_buffer_lock:
+                        server_log_buffers[server.id].append(log_line.strip())
                     
                     # Detect server fully started
                     if "Done (" in output and ")! For help, type \"help\"" in output:
@@ -130,6 +143,11 @@ def _monitor_server_output(server: Server, process: subprocess.Popen):
     except Exception as e:
         logger.error(f"Error in output monitoring for server {server.id}: {str(e)}", exc_info=True)
     finally:
+        # Clean up log buffer
+        with log_buffer_lock:
+            if server.id in server_log_buffers:
+                del server_log_buffers[server.id]
+        
         # Ensure process is cleaned up if monitoring stops
         if process.poll() is None:
             process.kill()
@@ -370,3 +388,12 @@ def send_command(server: Server, command: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error sending command to server {server.id}: {str(e)}", exc_info=True)
         return {"message": str(e), "data": False}
+    
+def get_server_logs(server_id):
+    """
+    Get the recent logs from the in-memory buffer
+    """
+    with log_buffer_lock:
+        if server_id in server_log_buffers:
+            return list(server_log_buffers[server_id])
+    return []

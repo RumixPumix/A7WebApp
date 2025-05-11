@@ -4,7 +4,6 @@ import handleResponse from '../../../utils/handleResponse.js';
 
 
 export default async function uploadFile(file, isPrivate = false) {
-  console.log('Uploading file:', file, 'Is private:', isPrivate); // Debugging log
   try {
     if (!file) {
       throw new Error('No file selected for upload.');

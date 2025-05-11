@@ -1,26 +1,16 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.user import User
 from app.models.forum import ForumPost, ForumComment, post_likes, post_dislikes
+from app.api.permissions_wrapper import permissions_wrapper
 from datetime import datetime
 
 forums_bp = Blueprint('forums_bp', __name__)
 
-def check_permission(current_user):
-    user = User.query.get(current_user)
-    if not user:
-        return None, (jsonify({"message": "You need to login first!"}), 401)
-    return user, None
-
 # Forum Posts Endpoints
 @forums_bp.route('/posts', methods=['GET'])
-@jwt_required()
-def get_posts():
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
-    
+@permissions_wrapper('forum.routes.get.posts')
+def get_posts(current_user, permissions_status):
     """Get all forum posts with pagination"""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
@@ -39,11 +29,9 @@ def get_posts():
     }), 200
 
 @forums_bp.route('/posts/<int:post_id>', methods=['GET'])
-@jwt_required()
-def get_post(post_id):
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper('forum.routes.get.post')
+def get_post(post_id, current_user, permissions_status):
+
     """Get a single forum post by ID"""
     post = ForumPost.query.get_or_404(post_id)
     if not post:
@@ -54,12 +42,9 @@ def get_post(post_id):
         }), 200
 
 @forums_bp.route('/posts', methods=['POST'])
-@jwt_required()
-def create_post():
+@permissions_wrapper('forum.routes.create.post')
+def create_post(current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
 
         """Create a new forum post"""
         data = request.get_json()
@@ -70,7 +55,7 @@ def create_post():
             title=data['title'],
             message=data['message'],
             post_type=data.get('post_type', 'discussion'),
-            user_id=user.id  # In a real app, get from auth token
+            user_id=current_user.id  # In a real app, get from auth token
         )
         
         db.session.add(post)
@@ -85,20 +70,18 @@ def create_post():
         return jsonify({"message": str(e)}), 500
 
 @forums_bp.route('/posts/<int:post_id>', methods=['PUT'])
-@jwt_required()
-def update_post(post_id):
+@permissions_wrapper(['forum.routes.update.post', 'forum.routes.update.post.all'])
+def update_post(post_id, current_user, permissions_status):
     try:
-        user, message = check_permission(get_jwt_identity())
-        if message:
-            return message
 
         """Update a forum post"""
         post = ForumPost.query.get_or_404(post_id)
         if not post:
             return jsonify({'message': 'Post not found'}), 404
 
-        if post.user_id != user.id:
-            return jsonify({"message": "You are not authorized to update this post!"}), 403
+        if not permissions_status.get('forum.routes.update.post.all'):
+            if not post.user_id == current_user.id:
+                return jsonify({"message": "You are not authorized to update this post!"}), 403
         
         data = request.get_json()
         if not data:
@@ -121,18 +104,17 @@ def update_post(post_id):
         return jsonify({"message": str(e)}), 500
 
 @forums_bp.route('/posts/<int:post_id>', methods=['DELETE'])
-@jwt_required()
-def delete_post(post_id):
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper(['forum.routes.delete.post', 'forum.routes.delete.post.all'])
+def delete_post(post_id, current_user, permissions_status):
+
     """Delete a forum post"""
     post = ForumPost.query.get_or_404(post_id)
     if not post:
         return jsonify({'message': 'Post not found'}), 404
     
-    if not (user.is_admin or post.user_id == user.id):
-        return jsonify({"status": False, "message": "You are not authorized to delete this post!"}), 403
+    if not permissions_status.get('forum.routes.delete.post.all'):
+        if not post.user_id == current_user.id:
+            return jsonify({"message": "You are not authorized to delete this post!"}), 403
     
     db.session.delete(post)
     db.session.commit()
@@ -144,23 +126,19 @@ def delete_post(post_id):
 
 # Post Likes/Dislikes Endpoints
 @forums_bp.route('/posts/<int:post_id>/like', methods=['POST'])
-@jwt_required()
-def like_post(post_id):
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper('forum.routes.like.post')
+def like_post(post_id, current_user, permissions_status):
     
     """Like a forum post"""
-    user_id = user.id
     
     existing_like = db.session.query(post_likes).filter_by(
-        post_id=post_id, user_id=user_id).first()
+        post_id=post_id, user_id=current_user.id).first()
 
     if existing_like:
         db.session.execute(
             post_likes.delete().where(
                 (post_likes.c.post_id == post_id) &
-                (post_likes.c.user_id == user_id)
+                (post_likes.c.user_id == current_user.id)
             )
         )
         db.session.commit()
@@ -170,13 +148,13 @@ def like_post(post_id):
     db.session.execute(
         post_dislikes.delete().where(
             (post_dislikes.c.post_id == post_id) &
-            (post_dislikes.c.user_id == user_id)
+            (post_dislikes.c.user_id == current_user.id)
         )
     )
     
     # Add like
     db.session.execute(
-        post_likes.insert().values(post_id=post_id, user_id=user_id)
+        post_likes.insert().values(post_id=post_id, user_id=current_user.id)
     )
     
     db.session.commit()
@@ -186,23 +164,19 @@ def like_post(post_id):
         }), 200
 
 @forums_bp.route('/posts/<int:post_id>/dislike', methods=['POST'])
-@jwt_required()
-def dislike_post(post_id):
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper('forum.routes.dislike.post')
+def dislike_post(post_id, current_user, permissions_status):
     """Dislike a forum post"""
-    user_id = user.id # In real app, get from auth
     
     # Check if already disliked → remove dislike (toggle off)
     existing_dislike = db.session.query(post_dislikes).filter_by(
-        post_id=post_id, user_id=user_id).first()
+        post_id=post_id, user_id=current_user.id).first()
 
     if existing_dislike:
         db.session.execute(
             post_dislikes.delete().where(
                 (post_dislikes.c.post_id == post_id) &
-                (post_dislikes.c.user_id == user_id)
+                (post_dislikes.c.user_id == current_user.id)
             )
         )
         db.session.commit()
@@ -212,13 +186,13 @@ def dislike_post(post_id):
     db.session.execute(
         post_likes.delete().where(
             (post_likes.c.post_id == post_id) &
-            (post_likes.c.user_id == user_id)
+            (post_likes.c.user_id == current_user.id)
         )
     )
     
     # Add dislike
     db.session.execute(
-        post_dislikes.insert().values(post_id=post_id, user_id=user_id)
+        post_dislikes.insert().values(post_id=post_id, user_id=current_user.id)
     )
     
     db.session.commit()
@@ -229,11 +203,9 @@ def dislike_post(post_id):
 
 
 @forums_bp.route('/posts/<int:post_id>/comments', methods=['POST'])
-@jwt_required()
-def create_comment(post_id):
-    user, message = check_permission(get_jwt_identity())
-    if message:
-        return message
+@permissions_wrapper('forum.routes.create.comment')
+def create_comment(post_id, current_user, permissions_status):
+
     """Create a new comment on a post"""
     data = request.get_json()
     if not data:
@@ -241,7 +213,7 @@ def create_comment(post_id):
     
     comment = ForumComment(
         message=data,
-        user_id=user.id,  # In real app, get from auth
+        user_id=current_user.id,  # In real app, get from auth
         post_id=post_id, 
     )
     

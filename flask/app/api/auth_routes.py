@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.models.user import User
 from app.models.token import RegistrationToken
 from app import db, bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token
 from datetime import datetime, timedelta
 import re
 import uuid
@@ -76,6 +76,9 @@ def login():
                 "id": user.id,
                 "username": user.username,
                 "role": user.role.name if user.role else None,
+                "permissions": [perm.name for perm in user.role.permissions] if user.role and user.role.permissions else [],
+                "email": user.email,
+                "email_verified": user.email_verified,
             }
         }
         return jsonify(response), 200

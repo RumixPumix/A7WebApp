@@ -1,5 +1,4 @@
 from flask import Blueprint, jsonify, request, send_from_directory, abort
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.api.permissions_wrapper import permissions_wrapper
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -178,20 +177,16 @@ def check_upload_limits(user_id, file_size):
     return True, ""
 
 @file_bp.route('/list', methods=['GET'])
-@permissions_wrapper(['file.route.list', 'file.route.list.limited'])
+@permissions_wrapper(['file.route.list', 'file.route.list.all'])
 def get_files(current_user, permissions_status):
     """Get all files from the database."""
     try:
         synchronize_filesystem_with_db()
 
-        if permissions_status['file.route.list.limited'] and not permissions_status['file.route.list']:
+        if not permissions_status['file.route.list.all']:
             files = File.query.filter_by(is_private=False).all()
-        elif permissions_status['file.route.list']:
-            files = File.query.all()
         else:
-            return jsonify({
-                "message": "You do not have permission to view files",
-            }), 403
+            files = File.query.all()
 
 
         if not files:
@@ -215,11 +210,7 @@ def get_files(current_user, permissions_status):
 def get_private_files(current_user, permissions_status):
     """Get private files for a specific user."""
     try:
-        if not permissions_status['file.route.get.private.files']:
-            return jsonify({
-                "message": "You do not have permission to view private files",
-            }), 403
-        
+
         files = File.query.filter_by(uploaded_by=current_user.id, is_private=True).all()
         if not files:
             return jsonify({
@@ -237,7 +228,7 @@ def get_private_files(current_user, permissions_status):
         }), 500
 
 @file_bp.route('/upload', methods=['POST'])
-@permissions_wrapper(['file.route.upload', 'file.route.upload.limited', 'file.route.upload.private.file', 'file.route.upload.private.file.limited'])
+@permissions_wrapper(['file.route.upload', 'file.route.upload.nolimit', 'file.route.upload.private.file', 'file.route.upload.private.file.nolimit'])
 def upload_file(current_user, permissions_status):
     """Upload a file to the server."""
     try:
@@ -259,15 +250,18 @@ def upload_file(current_user, permissions_status):
 
         # Get privacy setting from form data (default to False)
         is_private = request.form.get('isPrivate', 'false').lower() == 'true'
-        if is_private and not (permissions_status['file.route.upload.private.file'] or permissions_status['file.route.upload.private.file.limited']):
+        if is_private and not (permissions_status['file.route.upload.private.file'] or permissions_status['file.route.upload.private.file.nolimit']):
             return jsonify({"message": "You do not have permission to upload private files",}), 403
         
-        if is_private and not permissions_status['file.route.upload.private.file']:
+        if is_private and not permissions_status['file.route.upload.private.file.nolimit']:
             status = check_upload_limits(current_user.id, content_length)
             if not status[0]:
                 return jsonify({"message": status[1]}), 403
+            
+        if not is_private and not (permissions_status['file.route.upload'] or permissions_status['file.route.upload.nolimit']):
+            return jsonify({"message": "You do not have permission to upload files",}), 403
 
-        if not is_private and not permissions_status['file.route.upload']:
+        if not is_private and not permissions_status['file.route.upload.nolimit']:
             status = check_upload_limits(current_user.id, content_length)
             if not status[0]:
                 return jsonify({"message": status[1]}), 403
@@ -336,7 +330,7 @@ def upload_file(current_user, permissions_status):
         }), 500
 
 @file_bp.route('/download/<int:file_id>', methods=['GET'])
-@permissions_wrapper(['file.route.download', 'file.route.download.limited'])
+@permissions_wrapper(['file.route.download', 'file.route.download.all'])
 def download_file(file_id, current_user, permissions_status):
     try:
         # Get file from database
@@ -346,16 +340,11 @@ def download_file(file_id, current_user, permissions_status):
         if not os.path.isfile(file.file_path):
             abort(404, message="File not found on server")
 
-        # Admin can download anything
-        if permissions_status['file.route.download']:
-            return _send_file(file)
+        if not permissions_status['file.route.download.all']:
+            if file.is_private and file.uploaded_by != current_user.id:
+                abort(403, message="Access denied to private file")
 
-        if not permissions_status['file.route.download.limited']:
-            abort(403, message="No download permission")
-            
-        if file.is_private and file.uploaded_by != current_user.id:
-            abort(403, message="Access denied to private file")
-        
+        # Admin can download anything
         return _send_file(file)
 
     except Exception as e:
@@ -375,7 +364,7 @@ def _send_file(file):
     )
 
 @file_bp.route('/delete/<int:file_id>', methods=['DELETE'])
-@permissions_wrapper(['file.route.delete', 'file.route.delete.limited'])
+@permissions_wrapper(['file.route.delete', 'file.route.delete.all'])
 def delete_file(file_id, current_user, permissions_status):
     try:
         
@@ -387,18 +376,12 @@ def delete_file(file_id, current_user, permissions_status):
             }), 404
         
         # Check permissions
-        if permissions_status['file.route.delete']:
-            return _delete_file(file)
-        
-        if not permissions_status['file.route.delete.limited']:
-            return jsonify({
-                "message": "You do not have permission to delete files",
-            }), 403
-        
-        if file.is_private and file.uploaded_by != current_user.id:
-            return jsonify({
-                "message": "You do not have permission to delete this file",
-            }), 403
+        if not permissions_status['file.route.delete.all']:
+            if file.uploaded_by == current_user.id:
+                pass
+            else:
+                return jsonify({"message": "You do not have permission to delete this file"}), 403
+            
         
         return _delete_file(file)
 

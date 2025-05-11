@@ -24,9 +24,12 @@ const handleApiResponse = async (response) => {
 
 const storeUserData = (data) => {
     localStorage.setItem("access_token", data.access_token);
-    localStorage.setItem("username", data.user.username);
-    localStorage.setItem("is_admin", data.user.is_admin);
     localStorage.setItem("user_id", data.user.id);
+    localStorage.setItem("username", data.user.username);
+    localStorage.setItem("role", data.user.role);
+    localStorage.setItem("permissions", data.user.permissions);
+    localStorage.setItem("email", data.user.email);
+    localStorage.setItem("is_email_verified", data.user.email_verified);
 };
 
 const sendLoginInformation = async (username, password) => {
@@ -41,11 +44,22 @@ const sendLoginInformation = async (username, password) => {
 
         if (!data) return false;
 
-        if (data.status === true && data.access_token) {
+        if (
+            data.status === true &&
+            data.access_token &&
+            data.user &&
+            data.user.id &&
+            data.user.username &&
+            data.user.role &&
+            data.user.permissions &&
+            data.user.email &&
+            data.user.email_verified !== undefined // allow `false`, just check not undefined
+        ) {
             storeUserData(data);
             return true;
         } else if (data.status === false) {
             popup(data.title || "Login Failed", data.message || "Unknown error.");
+            console.error("Login failed:", data);
             return false;
         } else {
             popup("Error", "Login failed. Server returned unexpected data.");

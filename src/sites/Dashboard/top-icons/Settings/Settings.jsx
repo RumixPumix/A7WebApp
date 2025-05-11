@@ -13,13 +13,11 @@ function Settings() {
 
 
     const toggleDarkMode = () => {
-        console.log('toggled to');
         setIsDarkMode(!isDarkMode);
         // You would typically implement theme switching logic here
     };
 
     const toggleNotifications = () => {
-        console.log('toggled to', newValue);
         const newValue = !showNotifications;
         setShowNotifications(newValue); // ✅ just updates state
         setNotificationEnabled(newValue);

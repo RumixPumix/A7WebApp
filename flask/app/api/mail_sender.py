@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
+import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -40,81 +41,143 @@ class EmailVerificationSystem:
         msg['To'] = recipient_email
         
         html_content = f"""
+        <!DOCTYPE html>
         <html>
         <head>
-            <style>
-                body {{ 
-                    font-family: 'Helvetica Neue', Arial, sans-serif; 
-                    line-height: 1.6; 
-                    color: #333333; 
-                    max-width: 600px; 
-                    margin: 0 auto; 
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Verify your email address</title>
+            <style type="text/css">
+                /* Base styles */
+                body, html {{
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    width: 100% !important;
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    background-color: #f7f7f7;
+                }}
+                
+                /* Main container */
+                .email-container {{
+                    max-width: 600px;
+                    margin: 0 auto;
                     padding: 0;
+                    background-color: #ffffff;
                 }}
-                .container {{
-                    padding: 25px;
+                
+                /* Content container */
+                .content {{
+                    padding: 30px;
                 }}
-                .header {{ 
-                    font-size: 24px; 
-                    color: #000000; 
-                    margin-bottom: 20px; 
-                    font-weight: 500; 
+                
+                /* Header */
+                .header {{
+                    font-size: 24px;
+                    color: #000000;
+                    margin-bottom: 25px;
+                    font-weight: 600;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid #eeeeee;
                 }}
+                
+                /* Button styles */
                 .verify-button {{
-                    display: inline-block;
+                    display: block;
+                    width: 200px;
                     background-color: #3366cc;
                     color: #ffffff !important;
                     text-decoration: none;
-                    padding: 12px 24px;
-                    margin: 20px 0;
+                    padding: 14px 0;
+                    margin: 25px auto;
                     border-radius: 4px;
                     font-weight: 500;
                     text-align: center;
+                    font-size: 16px;
                 }}
+                
                 .verify-button:hover {{
                     background-color: #2a56b0;
                 }}
-                .footer {{ 
-                    font-size: 12px; 
-                    color: #999999; 
-                    margin-top: 30px; 
-                    border-top: 1px solid #eeeeee; 
-                    padding-top: 20px; 
+                
+                /* Footer */
+                .footer {{
+                    font-size: 12px;
+                    color: #999999;
+                    margin-top: 30px;
+                    border-top: 1px solid #eeeeee;
+                    padding-top: 20px;
+                    text-align: center;
                 }}
-                a {{ 
-                    color: #3366cc; 
-                    text-decoration: none; 
+                
+                /* Link styles */
+                a {{
+                    color: #3366cc;
+                    text-decoration: none;
                 }}
+                
                 .small-text {{
                     font-size: 14px;
                     color: #666666;
+                    line-height: 1.5;
+                }}
+                
+                .link-box {{
+                    word-break: break-all;
+                    padding: 10px;
+                    background-color: #f5f5f5;
+                    border-radius: 4px;
+                    margin: 15px 0;
+                }}
+                
+                /* Responsive adjustments */
+                @media screen and (max-width: 480px) {{
+                    .content {{
+                        padding: 20px;
+                    }}
+                    
+                    .header {{
+                        font-size: 20px;
+                    }}
+                    
+                    .verify-button {{
+                        width: 100%;
+                        box-sizing: border-box;
+                    }}
                 }}
             </style>
         </head>
         <body>
-            <div class="container">
-                <div class="header">Ace7Esports</div>
-                <p>Hello,</p>
-                <p>To complete your registration, please click the button below:</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{verification_link}" class="verify-button">Verify My Account</a>
-                </div>
-                
-                <p class="small-text">Or copy and paste this link into your browser:<br>
-                <a href="{verification_link}">{verification_link}</a></p>
-                
-                <p>This link will expire in {self.code_expiry_minutes} minutes. Please do not share it with anyone.</p>
-                
-                <p>If you didn't request this verification, please ignore this email or contact our support team.</p>
-                
-                <p>Best regards,<br>
-                <strong>The Ace7Esports Team</strong></p>
-                
-                <div class="footer">
-                    © 2024 Ace7Esports. All rights reserved.<br>
-                    <a href="https://ace7esports.com">ace7esports.com</a> | 
-                    <a href="https://ace7esports.com/privacy">Privacy Policy</a>
+            <div class="email-container">
+                <div class="content">
+                    <div class="header">Ace7Esports</div>
+                    
+                    <p>Hello,</p>
+                    
+                    <p>Thank you for registering with Ace7Esports. To complete your registration, please verify your email address by clicking the button below:</p>
+                    
+                    <a href="{verification_link}" class="verify-button">Verify Email Address</a>
+                    
+                    <p class="small-text">If the button doesn't work, copy and paste this link into your browser:</p>
+                    
+                    <div class="small-text link-box">
+                        <a href="{verification_link}">{verification_link}</a>
+                    </div>
+                    
+                    <p class="small-text">This verification link will expire in {self.code_expiry_minutes} minutes. For your security, please do not share this link with anyone.</p>
+                    
+                    <p class="small-text">If you didn't request this verification, please ignore this email or contact our support team immediately.</p>
+                    
+                    <p>Best regards,<br>
+                    <strong>The Ace7Esports Team</strong></p>
+                    
+                    <div class="footer">
+                        © {datetime.datetime.now().year} Ace7Esports. All rights reserved.<br>
+                        <a href="https://ace7esports.com">ace7esports.com</a> | 
+                        <a href="https://ace7esports.com/privacy">Privacy Policy</a> | 
+                        <a href="https://ace7esports.com/contact">Contact Us</a>
+                    </div>
                 </div>
             </div>
         </body>

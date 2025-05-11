@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, text, inspect, Table, MetaData
+from sqlalchemy import create_engine, text, inspect, Table
 from app import db
 from app.models.user import User
 from app.models.forum import ForumComment, ForumPost, post_likes, post_dislikes
@@ -22,7 +22,6 @@ def create_json_files():
     permissions_data = {
         "permissions": [
             {"name": "admin.route.get.users", "description": "Get all users"},
-            {"name": "admin.route.delete.user", "description": "Delete a user"},
             {"name": "admin.route.create.user", "description": "Create a new user"},
             {"name": "admin.route.update.user", "description": "Update user information"},
             {"name": "admin.route.get.tokens", "description": "Get all registration tokens"},
@@ -30,20 +29,54 @@ def create_json_files():
             {"name": "admin.route.delete.token", "description": "Delete a registration token"},
             {"name": "admin.route.ban.user", "description": "Ban a user"},
             {"name": "admin.route.unban.user", "description": "Unban a user"},
-            {"name": "admin.route.unban.user.limited", "description": "Unban a user that only that user banned"},
-            {"name": "file.route.get.files", "description": "Get all files even private ones"},
-            {"name": "file.route.get.files.limited", "description": "Get files only that are publicly available"},
+            {"name": "admin.route.unban.user.all", "description": "Unban all users (admin only)"},
+            
+            {"name": "dashboard.route.live", "description": "View live dashboard"},
+            {"name": "dashboard.route.home", "description": "View dashboard home"},
+            {"name": "dashboard.route.all", "description": "View all dashboard data"},
+
+            {"name": "file.route.list", "description": "List all files"},
+            {"name": "file.route.list.all", "description": "List all files across all users"},
             {"name": "file.route.get.private.files", "description": "Get your private files"},
-            {"name": "file.route.upload.file", "description": "Upload a file with no restrictions"},
-            {"name": "file.route.upload.file.limited", "description": "Upload a file with restrictions"},
+            {"name": "file.route.upload", "description": "Upload a file"},
+            {"name": "file.route.upload.nolimit", "description": "Upload a file without size restrictions"},
             {"name": "file.route.upload.private.file", "description": "Upload a private file"},
-            {"name": "file.route.upload.private.file.limited", "description": "Upload a private file"},
-            {"name": "file.route.download.file", "description": "Download a file"},
-            {"name": "file.route.download.file.limited", "description": "Download a file only that are publicly available"},
-            {"name": "file.route.delete.file.limited", "description": "Delete a file only that user uploaded"},
-            {"name": "file.route.delete.file", "description": "Delete any file"},
-            {"name": "file.route.update.file", "description": "Update file information"},
-            {"name": "file.route.update.file.limited", "description": "Update file information only that user uploaded"},
+            {"name": "file.route.upload.private.file.nolimit", "description": "Upload a private file without restrictions"},
+            {"name": "file.route.download", "description": "Download a file"},
+            {"name": "file.route.download.all", "description": "Download all files including private"},
+            {"name": "file.route.delete", "description": "Delete a file"},
+            {"name": "file.route.delete.all", "description": "Delete any file regardless of owner"},
+
+            {"name": "forum.routes.get.posts", "description": "Get all forum posts"},
+            {"name": "forum.routes.get.post", "description": "Get a specific forum post"},
+            {"name": "forum.routes.create.post", "description": "Create a new forum post"},
+            {"name": "forum.routes.update.post", "description": "Update a forum post"},
+            {"name": "forum.routes.update.post.all", "description": "Update any forum post"},
+            {"name": "forum.routes.delete.post", "description": "Delete a forum post"},
+            {"name": "forum.routes.delete.post.all", "description": "Delete any forum post"},
+            {"name": "forum.routes.like.post", "description": "Like a forum post"},
+            {"name": "forum.routes.dislike.post", "description": "Dislike a forum post"},
+            {"name": "forum.routes.create.comment", "description": "Create a comment on a post"},
+
+            {"name": "server.routes.get", "description": "Get own server information"},
+            {"name": "server.routes.get.all", "description": "Get all servers information"},
+            {"name": "server.routes.create", "description": "Create a server"},
+            {"name": "server.routes.create.nolimit", "description": "Create a server with no limits"},
+            {"name": "server.routes.delete", "description": "Delete a server"},
+            {"name": "server.routes.delete.all", "description": "Delete any server"},
+            {"name": "server.routes.update", "description": "Update server information"},
+            {"name": "server.routes.update.all", "description": "Update any server"},
+            {"name": "server.routes.start", "description": "Start a server"},
+            {"name": "server.routes.start.all", "description": "Start any server"},
+            {"name": "server.routes.stop", "description": "Stop a server"},
+            {"name": "server.routes.stop.all", "description": "Stop any server"},
+            {"name": "server.routes.restart", "description": "Restart a server"},
+            {"name": "server.routes.restart.all", "description": "Restart any server"},
+            {"name": "server.routes.plugins", "description": "Manage server plugins"},
+            {"name": "server.routes.logs.all", "description": "Get logs for all servers"},
+            {"name": "server.routes.logs", "description": "Get logs for your server"},
+            {"name": "server.routes.send_command.all", "description": "Send command to any server"},
+            {"name": "server.routes.send_command", "description": "Send command to your server"},
         ]
     }
 
@@ -53,22 +86,58 @@ def create_json_files():
     roles_data = {
         "roles": [
             {"name": "Admin", "description": "Administrator role with all permissions", "permissions": [
-                "admin.route.get.users", "admin.route.delete.user", "admin.route.create.user",
-                "admin.route.update.user", "admin.route.get.tokens", "admin.route.create.token",
-                "admin.route.delete.token", "admin.route.ban.user", "admin.route.unban.user", 
-                "file.route.get.files", "file.route.upload.file", "file.route.download.file",
-                "file.route.delete.file", "file.route.update.file"
+                "admin.route.get.users", "admin.route.create.user", "admin.route.update.user",
+                "admin.route.get.tokens", "admin.route.create.token", "admin.route.delete.token",
+                "admin.route.ban.user", "admin.route.unban.user.all", 
+                "dashboard.route.all",
+
+                "file.route.list.all", "file.route.get.private.files", "file.route.upload.nolimit", "file.route.upload.private.file.nolimit",
+                "file.route.download.all", "file.route.delete.all", 
+                
+                "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post.all", "forum.routes.delete.post.all", "forum.routes.like.post", "forum.routes.dislike.post",
+                "forum.routes.create.comment",
+
+                "server.routes.get.all", "server.routes.create.nolimit", "server.routes.delete.all", "server.routes.update.all", "server.routes.start.all", "server.routes.stop.all", "server.routes.restart.all",
+                "server.routes.plugins", "server.routes.send_command.all", "server.routes.logs.all"
             ]},
             {"name": "Moderator", "description": "Moderator role with limited permissions", "permissions": [
-                "admin.route.get.users", "admin.route.ban.user", "admin.route.get.tokens", "admin.route.create.token",
-                "admin.route.unban.user.limited"
+                "admin.route.get.users", "admin.route.create.user", "admin.route.update.user",
+                "admin.route.get.tokens", "admin.route.create.token", "admin.route.delete.token",
+                "admin.route.ban.user", "admin.route.unban.user", 
+                "dashboard.route.all",
+
+                "file.route.list.all", "file.route.get.private.files", "file.route.upload.nolimit", "file.route.upload.private.file.nolimit",
+                "file.route.download.all", "file.route.delete.all", 
+                
+                "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post.all", "forum.routes.delete.post.all", "forum.routes.like.post", "forum.routes.dislike.post",
+                "forum.routes.create.comment",
+
+                "server.routes.get.all", "server.routes.create.nolimit", "server.routes.delete.all", "server.routes.update.all", "server.routes.start.all", "server.routes.stop.all", "server.routes.restart.all",
+                "server.routes.plugins", "server.routes.send_command.all", "server.routes.logs.all"
             ]},
             {"name": "Uploader", "description": "User with unlimited uploads", "permissions": [
-                "file.route.upload.file"
+                "dashboard.route.home", "dashboard.route.live",
+
+                "file.route.list", "file.route.upload.nolimit", "file.route.download", "file.route.delete",
+                "file.route.upload.private.file.nolimit", "file.route.get.private.files",
+
+                "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post", "forum.routes.delete.post", "forum.routes.like.post", "forum.routes.dislike.post",
+                "forum.routes.create.comment",
+
+                "server.routes.get", "server.routes.create", "server.routes.delete", "server.routes.update", "server.routes.start", "server.routes.stop", "server.routes.restart",
+                "server.routes.plugins", "server.routes.send_command", "server.routes.logs"
             ]},
             {"name": "User", "description": "Regular user role with limited permissions", "permissions": [
-                "file.route.get.files.limited", "file.route.upload.file.limited", "file.route.download.file.limited",
-                "file.route.delete.file.limited", "file.route.update.file.limited"
+                "dashboard.route.home", "dashboard.route.live",
+
+                "file.route.list", "file.route.upload", "file.route.download", "file.route.delete",
+                "file.route.upload.private.file", "file.route.get.private.files",
+
+                "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post", "forum.routes.delete.post", "forum.routes.like.post", "forum.routes.dislike.post",
+                "forum.routes.create.comment",
+
+                "server.routes.get", "server.routes.create", "server.routes.delete", "server.routes.update", "server.routes.start", "server.routes.stop", "server.routes.restart",
+                "server.routes.plugins", "server.routes.send_command", "server.routes.logs"
             ]},
         ]
     }
