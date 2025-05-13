@@ -4,12 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSignOutAlt, faServer, faUsers, faFileUpload, faFileDownload,
   faComments, faTerminal, faCog, faBell,
-  faHouse
+  faHouse, faTools
 } from '@fortawesome/free-solid-svg-icons';
 import './dashboardStyle.css';
 import notification from '../ModularComponents/notification';
 import ServersTab from './sections/ServersTab/ServersTab';
-import UserManagementTab from './sections/UsersManagementTab/UsersManagementTab';
+import AdminPanelTab from './sections/AdminPanelTab/AdminPanelTab';
 import FilesTab from './sections/FilesTab/FilesTab';
 import ForumsTab from './sections/ForumsTab/ForumsTab';
 import ConsoleTab from './sections/ConsoleTab/ConsoleTab';
@@ -31,9 +31,10 @@ function Dashboard() {
     const navigate = useNavigate();
 
     const userInfo = getUserInfo();
+    localStorage.setItem('settings', JSON.stringify({ showNotifications }));
 
     useEffect(() => {
-        let isMounted = true;
+        let isMounted = true;        
     
         async function periodicTokenCheck() {
             try {
@@ -75,7 +76,7 @@ function Dashboard() {
         localStorage.setItem('activeTab', activeTab);
         switch (activeTab) {
             case 'servers': return <ServersTab userInfo={userInfo} searchTerm={searchQuery} />;
-            case 'userManagement': return <UserManagementTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'adminPanel': return <AdminPanelTab userInfo={userInfo} searchTerm={searchQuery} />;
             case 'profiles': return <ProfilesTab userInfo={userInfo} searchTerm={searchQuery} />;
             case 'files': return <FilesTab userInfo={userInfo} searchTerm={searchQuery} />;
             case 'forums': return <ForumsTab userInfo={userInfo} searchTerm={searchQuery} />;
@@ -88,11 +89,11 @@ function Dashboard() {
     const tabs = [
         { key: 'home', label: 'Home', icon: faHouse, adminOnly: false, showLoading: null },
         { key: 'servers', label: 'Servers', icon: faServer, adminOnly: false, showLoading: 'servers' },
-        { key: 'files', label: userInfo.is_admin ? 'File Manager' : 'Files', icon: userInfo.is_admin ? faFileUpload : faFileDownload, adminOnly: false, showLoading: 'files' },
+        { key: 'files', label: userInfo.is_admin ? 'File Manager' : 'Files', icon: faFileUpload, adminOnly: false, showLoading: 'files' },
         { key: 'forums', label: 'Community Forum', icon: faComments, adminOnly: false, showLoading: 'forum' },
         { key: 'profiles', label: 'Profiles', icon: faUsers, adminOnly: false, showLoading: null },
         { key: 'console', label: 'Console', icon: faTerminal, adminOnly: true, showLoading: null },
-        { key: 'userManagement', label: 'User Management', icon: faUsers, adminOnly: true, showLoading: 'users' },
+        { key: 'adminPanel', label: 'Admin Panel', icon: faTools, adminOnly: true, showLoading: 'users' },
     ];
 
     const renderTabs = () => (

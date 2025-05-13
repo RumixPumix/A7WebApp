@@ -143,25 +143,6 @@
   text-align: right !important;
 }
 
-/* Badges */
-.role-badge {
-  display: inline-block;
-  padding: 0.3rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.role-badge.User {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.role-badge.Admin {
-  background: #e8f5e9;
-  color: #388e3c;
-}
-
 .status-badge {
   display: inline-block;
   padding: 0.3rem 0.6rem;
@@ -402,4 +383,189 @@ input:checked + .slider:before {
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+
+/* Roles & Permissions Styles */
+.roles-table-container,
+.permissions-table-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.roles-table,
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.roles-table th,
+.permissions-table th {
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+}
+
+.roles-table td,
+.permissions-table td {
+  padding: 12px 15px;
+  border-top: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.role-badge.admin {
+  background-color: #6610f2;
+}
+
+.role-badge.user {
+  background-color: #20c997;
+}
+
+.role-badge.guest {
+  background-color: #17a2b8;
+}
+
+.role-badge.moderator {
+  background-color: #dc3545;
+}
+
+.role-badge.uploader {
+  background-color: #fd7e14;
+}
+
+.role-chip {
+  display: inline-block;
+  background-color: #e9ecef;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-right: 5px;
+  color: #495057;
+}
+
+.permissions-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+}
+
+.checkbox-label {
+  display: block;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+.checkbox-label:hover input ~ .checkmark {
+  background-color: #ddd;
+}
+
+.checkbox-label input:checked ~ .checkmark {
+  background-color: #4285f4;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-label input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-label .checkmark:after {
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Modal specific styles for roles */
+.modal-content .permissions-checkboxes {
+  max-height: 150px;
+}
+
+
+
+
+
+.permissions-dnd-container {
+  display: flex;
+  gap: 20px;
+}
+
+.permissions-column {
+  flex: 1;
+}
+
+.permissions-list {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  min-height: 200px;
+  padding: 10px;
+}
+
+.permissions-list.active {
+  background-color: #f8fff0;
+}
+
+.permissions-list.inactive {
+  background-color: #f9f9f9;
+}
+
+.permission-item {
+  padding: 8px 12px;
+  margin: 5px 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.permission-item:hover {
+  background-color: #f0f0f0;
 }

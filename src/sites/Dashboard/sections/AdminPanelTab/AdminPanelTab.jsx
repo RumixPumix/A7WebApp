@@ -1,31 +1,42 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCog, faKey, faClock, faTimes, faTrash, faExclamationTriangle, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import addUser from './UsersManagementAPI/addUser';
-import editUser from './UsersManagementAPI/editUser';
-import deleteUser from './UsersManagementAPI/deleteUser';
-import fetchUsers from './UsersManagementAPI/fetchUsers';
-import fetchTokens from './UsersManagementAPI/fetchTokens';
-import generateToken from './UsersManagementAPI/generateToken';
-import deleteToken from './UsersManagementAPI/deleteToken';
-import postToken from './UsersManagementAPI/postToken';
-import notification from '../../../ModularComponents/notification';
-import './userManagementStyle.css'; // Assuming you have a CSS file for styling
+import { faUserCog, faLock, faEdit, faUserShield, faKey, faClock, faTimes, faTrash, faExclamationTriangle, faEye, faEyeSlash, faShield, faUsers, faHome, faGear, faArrowAltCircleLeft } from '@fortawesome/free-solid-svg-icons';
+import addUser from './AdminPanelAPI/addUser.js';
+import editUser from './AdminPanelAPI/editUser.js';
+import deleteUser from './AdminPanelAPI/deleteUser.js';
+import fetchUsers from './AdminPanelAPI/fetchUsers.js';
+import fetchTokens from './AdminPanelAPI/fetchTokens.js';
+import fetchRoles from './AdminPanelAPI/fetchRoles.js';
+import fetchPermissions from './AdminPanelAPI/fetchPermissions.js';
+import generateToken from './AdminPanelAPI/generateToken.js';
+import deleteToken from './AdminPanelAPI/deleteToken.js';
+import postToken from './AdminPanelAPI/postToken.js';
+import notification from '../../../ModularComponents/notification.jsx';
+import './adminPanelStyle.css'; // Assuming you have a CSS file for styling
 import Spinner from '../../../ModularComponents/spinner.jsx'; // your spinner component
 import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // your last updated component
 
-function UserManagementTab({ userInfo, searchTerm = ''}) {
+function AdminPanelTab({ userInfo, searchTerm = ''}) {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [currentToken, setCurrentToken] = useState('');
+  const [editingRole, setEditingRole] = useState(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [tokens, setTokens] = useState([]);
-  const [loading, setLoading] = useState({ users: true, tokens: true });
+  const [permissions, setPermissions] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState({ users: true, tokens: true, permissions: true, roles: true });
   const [showPassword, setShowPassword] = useState(false);
   const [selectedExpiry, setSelectedExpiry] = useState("1"); // Default to 1 day
   const [showExpiredTokens, setShowExpiredTokens] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null); // Track when last updated
+  const [draggedPermission, setDraggedPermission] = useState(null);
+  const [activeTab, setActiveTab] = useState(null); // Track the active tab
+  const valid_activeTabs = ['users', 'tokens', 'roles', 'permissions', 'home'];
+  const [darkMode, setDarkMode] = useState(false); // Track dark mode state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const filteredUsers = users.filter(user => 
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,6 +52,7 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
     token.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     token.used_at?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   async function loadUsersData(){
     try {
@@ -64,15 +76,40 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
         tokensData = []; // Fallback to empty array if fetch fails
       }
       setTokens(tokensData);
-    } catch (error) {
     } finally {
       setLoading((prev) => ({ ...prev, tokens: false }));
+    }
+  }
+
+  async function loadPermissionsData(){
+    try {
+      let permissionsData = await fetchPermissions(); // Assuming you have a function to fetch permissions
+      if (!permissionsData) {
+        permissionsData = []; // Fallback to empty array if fetch fails
+      }
+      setPermissions(permissionsData);
+    } finally {
+      setLoading((prev) => ({ ...prev, permissions: false }));
+    }
+  }
+
+  async function loadRolesData(){
+    try {
+      let rolesData = await fetchRoles(); // Assuming you have a function to fetch roles
+      if (!rolesData) {
+        rolesData = []; // Fallback to empty array if fetch fails
+      }
+      setRoles(rolesData);
+    } finally {
+      setLoading((prev) => ({ ...prev, roles: false }));
     }
   }
 
   useEffect(() => {
     loadUsersData();
     loadTokensData();
+    loadPermissionsData();
+    loadRolesData();
   }, []);
 
   useEffect(() => {
@@ -81,6 +118,9 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
           //setLoading({ users: true, tokens: true });
           loadUsersData();
           loadTokensData();
+          loadPermissionsData();
+          loadRolesData();
+          setLastUpdated(Date.now()); // Update last updated time
         }
       }, 1000);
   
@@ -116,9 +156,6 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
         return;
       }
       await loadUsersData();
-    }
-    catch (error) {
-      notification('Failed to add/edit user', 'error'); // Use your notification system here
     } finally {
       setShowUserModal(false);
       setEditingUser(null);
@@ -189,11 +226,137 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
     );
   };
 
+  const handleOpenAddRole = () => {
+    setEditingRole(null);
+    setShowRoleModal(true);
+  };
+
+  const handleRoleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const roleData = {
+      name: formData.get('roleName'),
+      description: formData.get('description'),
+      permissions: Array.from(formData.getAll('permissions')),
+    };
+
+    console.log(roleData);
+  }
+
+  const handleEditRole = (role) => {
+    setEditingRole(role);
+    setShowRoleModal(true);
+  };
+
+  const handleDragStart = (e, permission) => {
+    setDraggedPermission(permission);
+    e.dataTransfer.setData('text/plain', permission.id);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, action) => {
+    e.preventDefault();
+    if (!draggedPermission) return;
+
+    const updatedPermissions = action === 'assign'
+      ? [...(editingRole?.permissions || []), draggedPermission]
+      : editingRole?.permissions?.filter(perm => perm.id !== draggedPermission.id);
+
+    setEditingRole({
+      ...editingRole,
+      permissions: updatedPermissions
+    });
+  };
+
+  const handleDeleteRole = async (roleId) => {
+    setLoading((prev) => ({ ...prev, roles: true }));
+    const result = await deleteRole(roleId);
+    if (!result) {
+      setLoading((prev) => ({ ...prev, roles: false }));
+      return;
+    }
+    await loadRolesData();
+  };
+
+  const getRolesWithPermission = (permissionId) => {
+    return roles.filter(role => role.permissions && role.permissions.includes(permissionId));
+  };
+
+
+
   if (loading.users || loading.tokens) {
     return (
       <Spinner item="Management Board" />
     );
   }
+
+  if (!valid_activeTabs.includes(activeTab)) {
+    setActiveTab('home'); // Default to users tab if invalid tab is set
+  }
+  if (activeTab === 'home') {
+    return (
+      <div className={`admin-dashboard ${darkMode ? 'dark' : 'light'}`}>
+        {/* Sidebar */}
+        <div className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+          <div className="sidebar-header">
+            <h2>Admin<span>Portal</span></h2>
+            <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              {sidebarOpen ? '◄' : '►'}
+            </button>
+          </div>
+          
+          <nav>
+            <ul>
+              <li className="active">
+                <button onClick={() => setActiveTab('home')}>
+                  <FontAwesomeIcon icon={faHome} className="icon" />
+                  {sidebarOpen && <span>Dashboard</span>}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('users')}>
+                  <FontAwesomeIcon icon={faUsers} className="icon" />
+                  {sidebarOpen && <span>Users</span>}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('tokens')}>
+                  <FontAwesomeIcon icon={faKey} className="icon" />
+                  {sidebarOpen && <span>Tokens</span>}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('roles')}>
+                  <FontAwesomeIcon icon={faShield} className="icon" />
+                  {sidebarOpen && <span>Roles</span>}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('permissions')}>
+                  <FontAwesomeIcon icon={faLock} className="icon" />
+                  {sidebarOpen && <span>Permissions</span>}
+                </button>
+              </li>
+            </ul>
+          </nav>
+          
+          <div className="sidebar-footer">
+            <button className="settings-btn" onClick={() => setDarkMode(!darkMode)}>
+              <FontAwesomeIcon icon={faGear} className="icon" />
+              {sidebarOpen && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+            </button>
+            <button className="logout-btn">
+              <FontAwesomeIcon icon={faArrowAltCircleLeft} className="icon" />
+              {sidebarOpen && <span>Logout</span>}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+    }
 
   return (
     <div className="tab-content">
@@ -244,8 +407,11 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
                 <div className="form-group">
                   <label>Role</label>
                   <select name="role" defaultValue={editingUser?.role || 'user'}>
-                    <option value="User">User</option>
-                    <option value="Admin">Admin</option>
+                    {roles.map((role) => (
+                      <option key={role.id} value={role.name}>
+                        {role.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -507,8 +673,186 @@ function UserManagementTab({ userInfo, searchTerm = ''}) {
           </div>
         </div>
       )}
+      {/* Roles Management Section */}
+      <div className="tab-header" style={{ marginTop: '40px' }}>
+        <h3>Roles Management</h3>
+        <button className="btn-primary" onClick={handleOpenAddRole}>
+          <FontAwesomeIcon icon={faUserShield} /> Add Role
+        </button>
+
+        {showRoleModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>{editingRole ? 'Edit Role' : 'Add New Role'}</h3>
+              <form onSubmit={handleRoleSubmit}>
+                <div className="form-group">
+                  <label>Role Name</label>
+                  <input
+                    type="text"
+                    name="roleName"
+                    defaultValue={editingRole?.name || ''}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    name="description"
+                    defaultValue={editingRole?.description || ''}
+                    rows="3"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Permissions</label>
+                  <div className="permissions-dnd-container">
+                    {/* Inactive Permissions */}
+                    <div className="permissions-column">
+                      <h4>Available Permissions</h4>
+                      <div className="permissions-list inactive">
+                        {permissions
+                          .filter(permission => !editingRole?.permissions?.some(perm => perm.id === permission.id))
+                          .map(permission => (
+                            <div 
+                              key={`inactive-${permission.id}`}
+                              className="permission-item"
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, permission)}
+                            >
+                              {permission.name}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* Active Permissions */}
+                    <div className="permissions-column">
+                      <h4>Assigned Permissions</h4>
+                      <div 
+                        className="permissions-list active"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, 'assign')}
+                      >
+                        {editingRole?.permissions?.map(permission => (
+                          <div
+                            key={`active-${permission.id}`}
+                            className="permission-item"
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, permission)}
+                          >
+                            {permission.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button type="button" className="btn-secondary" onClick={() => setShowRoleModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    {editingRole ? 'Update Role' : 'Create Role'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Roles Table */}
+      {roles.length === 0 ? (
+        <div className="empty-state">No roles found</div>
+      ) : (
+        <div className="roles-table-container">
+          <table className="roles-table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Description</th>
+                <th>Permissions Count</th>
+                <th className='right-align-action'>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roles.map((role) => (
+                <tr key={role.id}>
+                  <td>
+                    <span className={`role-badge ${role.name.toLowerCase()}`}>
+                      {role.name}
+                    </span>
+                  </td>
+                  <td>{role.description || '-'}</td>
+                  <td>{role.permissions?.length || 0}</td>
+                  <td className='right-align'>
+                    <button
+                      className="btn-icon"
+                      onClick={() => handleEditRole(role)}
+                      title="Edit Role"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      className="btn-icon danger"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete the ${role.name} role?`)) {
+                          handleDeleteRole(role.id);
+                        }
+                      }}
+                      title="Delete Role"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Permissions Section */}
+      <div className="tab-header" style={{ marginTop: '40px' }}>
+        <h3>Permissions</h3>
+      </div>
+
+      {permissions.length === 0 ? (
+        <div className="empty-state">No permissions found</div>
+      ) : (
+        <div className="permissions-table-container">
+          <table className="permissions-table">
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <th>Description</th>
+                <th>Assigned to Roles</th>
+              </tr>
+            </thead>
+            <tbody>
+              {permissions.map((permission) => (
+                <tr key={permission.id}>
+                  <td>
+                    <code>{permission.name}</code>
+                  </td>
+                  <td>{permission.description || '-'}</td>
+                  <td>
+                    {getRolesWithPermission(permission.id).map(role => (
+                      <span key={role.id} className="role-chip">
+                        {role.name}
+                      </span>
+                    ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-export default UserManagementTab;
+export default AdminPanelTab;

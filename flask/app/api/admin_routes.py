@@ -3,6 +3,7 @@ from app import db
 from app.models.user import User
 from app.models.token import RegistrationToken
 from app.models.role import Role
+from app.models.permission import Permission
 import secrets
 import string
 from app.api.permissions_wrapper import permissions_wrapper
@@ -190,6 +191,35 @@ def get_tokens(current_user, permissions_status):
         return jsonify({
             "message": str(e)
         }), 500
+    
+@admin_bp.route('/permissions', methods=['GET'])
+@permissions_wrapper('admin.route.get.permissions')
+def get_permissions(current_user, permissions_status):
+    try:
+        permissions = Permission.query.all()
+        permission_list = [p.to_dict() for p in permissions]
+        return jsonify({
+            "message": "Permissions retrieved successfully",
+            "data": permission_list
+        }), 200
+    except Exception as e:
+        print("Error occured:", str(e))
+        return jsonify({"message":str(e)}), 500
+    
+@admin_bp.route('/roles', methods=['GET'])
+@permissions_wrapper('admin.route.get.roles')
+def get_roles(current_user, permissions_status):
+    try:
+        roles = Role.query.all()
+        role_list = [r.to_dict(True) for r in roles]
+
+        return jsonify({
+            "message": "Roles retrieved successfully",
+            "data": role_list
+        }), 200
+    except Exception as e:
+        print("Error occured:", str(e))
+        return jsonify({"message":str(e)}), 500
 
 @admin_bp.route('/token', methods=['POST'])
 @permissions_wrapper('admin.route.create.token')

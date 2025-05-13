@@ -37,6 +37,66 @@
             "description": "Unban all users (admin only)"
         },
         {
+            "name": "admin.route.get.user",
+            "description": "Get a specific user"
+        },
+        {
+            "name": "admin.route.get.roles",
+            "description": "Get all roles"
+        },
+        {
+            "name": "admin.route.create.role",
+            "description": "Create a new role"
+        },
+        {
+            "name": "admin.route.update.role",
+            "description": "Update a role"
+        },
+        {
+            "name": "admin.route.delete.role",
+            "description": "Delete a role"
+        },
+        {
+            "name": "admin.route.get.permissions",
+            "description": "Get all permissions"
+        },
+        {
+            "name": "admin.route.create.permission",
+            "description": "Create a new permission"
+        },
+        {
+            "name": "admin.route.update.permission",
+            "description": "Update a permission"
+        },
+        {
+            "name": "admin.route.delete.permission",
+            "description": "Delete a permission"
+        },
+        {
+            "name": "admin.route.get.role.permissions",
+            "description": "Get permissions for a role"
+        },
+        {
+            "name": "admin.route.set.role.permissions",
+            "description": "Set permissions for a role"
+        },
+        {
+            "name": "admin.route.get.user.roles",
+            "description": "Get roles for a user"
+        },
+        {
+            "name": "admin.route.set.user.roles",
+            "description": "Set roles for a user"
+        },
+        {
+            "name": "admin.route.get.user.permissions",
+            "description": "Get permissions for a user"
+        },
+        {
+            "name": "admin.route.set.user.permissions",
+            "description": "Set permissions for a user"
+        },
+        {
             "name": "dashboard.route.live",
             "description": "View live dashboard"
         },

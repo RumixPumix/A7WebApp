@@ -1,4 +1,4 @@
-import config from '../../../../../config/config';
+import config from '../../../../../config/config.js';
 import handleResponse from '../../../utils/handleResponse.js';
 import errorWrapper from '../../../utils/errorWrapper.js';
 

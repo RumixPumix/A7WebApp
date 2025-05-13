@@ -3,11 +3,10 @@ import { ExpectedIssue } from './expectedIssue.js';
 
 function getNotificationSettings() {
     const settings = JSON.parse(localStorage.getItem('settings'));
-    console.debug('Notification settings:', settings);
-    return settings?.showNotification ?? true;
+    return settings?.showNotifications ?? true;
 }
 
-export default async function handleResponse(response) {
+export default async function handleResponse(response, force = true) {
     const showNotification = getNotificationSettings();
     if (response.ok) {
         let dataAPI;
@@ -15,16 +14,16 @@ export default async function handleResponse(response) {
             dataAPI = await response.json();
         } catch (error) {
             throw new ExpectedIssue('Invalid JSON response from server');
-            return;
         }
 
         if (!dataAPI?.message || !dataAPI?.data) {
             throw new ExpectedIssue('Received invalid response format from server');
-            return;
         }
 
         if (showNotification) {
-            notification(dataAPI.message, 'success');
+            if (force){
+                notification(dataAPI.message, 'success');
+            }
         }
 
         return dataAPI.data; 
@@ -35,10 +34,15 @@ export default async function handleResponse(response) {
         data = await response.json();
         if (data?.message) {
             throw new ExpectedIssue(data.message);
-            return;
         }
     } catch (error) {
-        throw new Error(error);
+        if (error instanceof SyntaxError) {
+            throw new ExpectedIssue('Invalid JSON response from server');
+        } else if (error instanceof ExpectedIssue) {
+            throw error; // Re-throw ExpectedIssue errors
+        } else {
+            throw new Error(error.message); // Handle other errors
+        }
     }
 
     switch (response.status) {

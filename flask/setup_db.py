@@ -30,6 +30,22 @@ def create_json_files():
             {"name": "admin.route.ban.user", "description": "Ban a user"},
             {"name": "admin.route.unban.user", "description": "Unban a user"},
             {"name": "admin.route.unban.user.all", "description": "Unban all users (admin only)"},
+
+            {"name": "admin.route.get.user", "description": "Get a specific user"},
+            {"name": "admin.route.get.roles", "description": "Get all roles"},
+            {"name": "admin.route.create.role", "description": "Create a new role"},
+            {"name": "admin.route.update.role", "description": "Update a role"},
+            {"name": "admin.route.delete.role", "description": "Delete a role"},
+            {"name": "admin.route.get.permissions", "description": "Get all permissions"},
+            {"name": "admin.route.create.permission", "description": "Create a new permission"},
+            {"name": "admin.route.update.permission", "description": "Update a permission"},
+            {"name": "admin.route.delete.permission", "description": "Delete a permission"},
+            {"name": "admin.route.get.role.permissions", "description": "Get permissions for a role"},
+            {"name": "admin.route.set.role.permissions", "description": "Set permissions for a role"},
+            {"name": "admin.route.get.user.roles", "description": "Get roles for a user"},
+            {"name": "admin.route.set.user.roles", "description": "Set roles for a user"},
+            {"name": "admin.route.get.user.permissions", "description": "Get permissions for a user"},
+            {"name": "admin.route.set.user.permissions", "description": "Set permissions for a user"},
             
             {"name": "dashboard.route.live", "description": "View live dashboard"},
             {"name": "dashboard.route.home", "description": "View dashboard home"},
@@ -88,7 +104,11 @@ def create_json_files():
             {"name": "Admin", "description": "Administrator role with all permissions", "permissions": [
                 "admin.route.get.users", "admin.route.create.user", "admin.route.update.user",
                 "admin.route.get.tokens", "admin.route.create.token", "admin.route.delete.token",
-                "admin.route.ban.user", "admin.route.unban.user.all", 
+                "admin.route.ban.user", "admin.route.unban.user.all", "admin.route.get.user", "admin.route.get.roles",
+                "admin.route.create.role", "admin.route.update.role", "admin.route.delete.role", "admin.route.get.permissions",
+                "admin.route.create.permission", "admin.route.delete.permission", "admin.route.get.role.permissions", "admin.route.set.role.permissions",
+                "admin.route.get.user.permissions", "admin.route.set.user.permissions",
+
                 "dashboard.route.all",
 
                 "file.route.list.all", "file.route.get.private.files", "file.route.upload.nolimit", "file.route.upload.private.file.nolimit",
@@ -103,7 +123,9 @@ def create_json_files():
             {"name": "Moderator", "description": "Moderator role with limited permissions", "permissions": [
                 "admin.route.get.users", "admin.route.create.user", "admin.route.update.user",
                 "admin.route.get.tokens", "admin.route.create.token", "admin.route.delete.token",
-                "admin.route.ban.user", "admin.route.unban.user", 
+                "admin.route.ban.user", "admin.route.unban.user", "admin.route.get.user", "admin.route.get.roles", 
+                "admin.route.get.permissions", "admin.route.get.role.permissions", "admin.route.get.user.permissions",
+
                 "dashboard.route.all",
 
                 "file.route.list.all", "file.route.get.private.files", "file.route.upload.nolimit", "file.route.upload.private.file.nolimit",
