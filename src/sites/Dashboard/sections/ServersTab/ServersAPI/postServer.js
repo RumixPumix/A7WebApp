@@ -1,9 +1,9 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 export default async function postServer(serverData) {
-  try {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/server/create`, {
     method: 'POST', // Use POST method to create a new server
       headers: {
@@ -17,9 +17,5 @@ export default async function postServer(serverData) {
 
     return data; // Return the parsed data
 
-  } catch (error) {
-    console.error(error);
-    //notification(`${error}`, 'error'); // Use your notification system here
-    return false;
-  }
+  });
 }

@@ -1,9 +1,9 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 export default async function serverAction(serverId, action) {
-  try {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/server/${action}/${serverId}`, {
       method: 'POST',
       headers: {
@@ -15,9 +15,5 @@ export default async function serverAction(serverId, action) {
 
     return data;
     
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error'); // Use your notification system here
-    return false;
-  }
+  });
 }

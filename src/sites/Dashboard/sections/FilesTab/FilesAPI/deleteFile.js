@@ -1,14 +1,13 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
+import errorWrapper from '../../../utils/errorWrapper.js';
 import handleResponse from '../../../utils/handleResponse.js';
-
 
 export default async function deleteFile(fileId) {
   if (!window.confirm('Are you sure you want to delete this file?')) {
     return false;
   }
 
-  try {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/files/delete/${fileId}`, {
       method: 'DELETE',
       headers: {
@@ -20,9 +19,5 @@ export default async function deleteFile(fileId) {
 
     return data;
     
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error'); // Use your notification system here
-    return false;
-  }
+  });
 }

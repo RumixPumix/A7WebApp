@@ -14,7 +14,7 @@ import './userManagementStyle.css'; // Assuming you have a CSS file for styling
 import Spinner from '../../../ModularComponents/spinner.jsx'; // your spinner component
 import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // your last updated component
 
-function UserManagementTab(userInfo) {
+function UserManagementTab({ userInfo, searchTerm = ''}) {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showTokenModal, setShowTokenModal] = useState(false);
@@ -27,6 +27,20 @@ function UserManagementTab(userInfo) {
   const [showExpiredTokens, setShowExpiredTokens] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null); // Track when last updated
 
+  const filteredUsers = users.filter(user => 
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.created_at.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.last_login?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const filteredTokens = tokens.filter(token =>
+    token.token.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    token.created_at.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    token.expires_at?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    token.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    token.used_at?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   async function loadUsersData(){
     try {
@@ -265,7 +279,7 @@ function UserManagementTab(userInfo) {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id}>
                   <td>{user.username}</td>
                   <td>{user.created_at}</td>
@@ -339,7 +353,7 @@ function UserManagementTab(userInfo) {
               </tr>
             </thead>
             <tbody>
-            {tokens.map((token) => {
+            {filteredTokens.map((token) => {
               if (token.is_used && !showExpiredTokens) {
                 return null; // Skip rendering this token if it's used and we're not showing expired
               }

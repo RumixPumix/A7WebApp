@@ -1,6 +1,7 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import { ExpectedIssue } from '../../../utils/expectedIssue.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 
 /**
@@ -31,7 +32,7 @@ const formatDate = (dateString) => {
  * @returns {Promise<Array>} Array of formatted user objects
  */
 export default async function fetchUsers() {
-  try {
+  return errorWrapper(async () => {
     const url = `${config.baseURL}/api/admin/users`;
     const options = {
       headers: {
@@ -44,19 +45,14 @@ export default async function fetchUsers() {
     const data = await handleResponse(response);
 
     if (!Array.isArray(data)) {
-      throw new Error('Received invalid response format from server');
+      throw new ExpectedIssue('Received invalid response format from server');
     }
 
     return data.map(user => ({
       ...user,
-      role: user.is_admin ? 'Admin' : 'User',
       created_at: formatDate(user.created_at),
       last_login: formatDate(user.last_login),
     }));
 
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error');
-    return false;
-  }
+  });
 }

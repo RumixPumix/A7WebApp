@@ -1,6 +1,7 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import { ExpectedIssue } from '../../../utils/expectedIssue.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 /**
  * Formats a date string into a more readable format (DD.MM - HH:MM)
@@ -30,7 +31,7 @@ const formatDate = (dateString) => {
  * @returns {Promise<Array>} Array of formatted token objects
  */
 export default async function fetchTokens() {
-  try {
+  return errorWrapper(async () => {
     const url = `${config.baseURL}/api/admin/tokens`;
     const options = {
       headers: {
@@ -44,7 +45,7 @@ export default async function fetchTokens() {
 
     // Handle case where data might not be in expected format
     if (!Array.isArray(data)) {
-      throw new Error('Invalid response format from server');
+      throw new ExpectedIssue('Invalid response format from server');
     }
 
     // Transform the user data
@@ -57,9 +58,5 @@ export default async function fetchTokens() {
         creator: token.creator.username || 'Unknown',
         user: token.user?.username || 'Unknown'
     }));
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error');
-    return false; // Return empty array to allow UI to handle empty state
-  }
+  });
 }

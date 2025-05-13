@@ -4,6 +4,7 @@ import {
   faServer,
   faUsers,
   faFileAlt,
+  faBan,
   faChartLine,
   faBolt,
   faUserShield
@@ -131,7 +132,7 @@ const HomeTab = ({ userInfo }) => {
                     aria-label={`Server status: ${getSafe(() => node.status, 'offline')}`}
                   >
                     <FontAwesomeIcon 
-                      icon={getSafe(() => node.status, 'offline') === 'online' ? faServer : faServerSlash} 
+                      icon={getSafe(() => node.status, 'offline') === 'online' ? faServer : faBan} 
                     />
                   </div>
                   

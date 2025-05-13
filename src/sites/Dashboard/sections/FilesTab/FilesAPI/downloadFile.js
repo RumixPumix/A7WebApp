@@ -1,61 +1,52 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
-import handleResponse from '../../../utils/handleResponse.js';
+import { ExpectedIssue } from '../../../utils/expectedIssue.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 
-export default async function downloadFile(fileId) {
-  try {
+export default async function downloadFile(fileId, onProgress) {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/files/download/${fileId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
     });
-    
-    if (response.status === 422) {
-      // Handle validation errors
-      throw new Error('Token expired or invalid. Please re-login.');
-    }
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Unknown server error');
-    }
 
     const contentType = response.headers.get('Content-Type');
-    const blob = await response.blob();
+    const contentLength = response.headers.get('Content-Length');
+    let loaded = 0;
+    const total = parseInt(contentLength, 10) || 0;
 
-    // Try to detect JSON errors only
-    if (contentType && contentType.includes('application/json')) {
-      const text = await blob.text();
-      try {
-        const json = JSON.parse(text);
-        if (json.message) {
-          throw new Error(json.message);
+    if (!response.ok) {
+      if (contentType?.includes('application/json')) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.message){
+          throw new ExpectedIssue(errorData.message);
         }
-      } catch (e) {
-        throw new Error(text || 'Server returned an unexpected response.');
+      }
+      throw new Error(`Download failed with status ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const chunks = [];
+    
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      chunks.push(value);
+      loaded += value.length;
+      if (onProgress && total > 0) {
+        onProgress(Math.round((loaded / total) * 100));
       }
     }
 
-    // Optional: check blob size if you want (e.g., must be at least 1 KB)
-    if (blob.size < 1024) { // 1 KB minimum (you can adjust)
-      throw new Error('Downloaded file is too small. Possible server error.');
+    const blob = new Blob(chunks);
+    
+    if (blob.size < 1024) {
+      throw new ExpectedIssue('Downloaded file is too small. Possible server error.');
     }
 
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `file-${fileId}`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
-
-    notification('Download started successfully!', 'success');
+    triggerDownload(blob, `file-${fileId}`);
     return true;
-
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error');
-    return false;
-  }
+  });
 }

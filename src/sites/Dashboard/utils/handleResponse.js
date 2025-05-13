@@ -1,25 +1,29 @@
 import notification from '../../ModularComponents/notification.jsx';
+import { ExpectedIssue } from './expectedIssue.js';
 
-let showNotification = false; // Default to false
-
-export function setNotificationEnabled(enabled) {
-    showNotification = enabled;
+function getNotificationSettings() {
+    const settings = JSON.parse(localStorage.getItem('settings'));
+    console.debug('Notification settings:', settings);
+    return settings?.showNotification ?? true;
 }
 
-export default async function handleResponse(response, customShow = true) {
+export default async function handleResponse(response) {
+    const showNotification = getNotificationSettings();
     if (response.ok) {
         let dataAPI;
         try {
             dataAPI = await response.json();
         } catch (error) {
-            throw new Error('Invalid JSON response from server');
+            throw new ExpectedIssue('Invalid JSON response from server');
+            return;
         }
 
         if (!dataAPI?.message || !dataAPI?.data) {
-            throw new Error('Received invalid response format from server');
+            throw new ExpectedIssue('Received invalid response format from server');
+            return;
         }
 
-        if (showNotification && customShow) {
+        if (showNotification) {
             notification(dataAPI.message, 'success');
         }
 
@@ -30,8 +34,8 @@ export default async function handleResponse(response, customShow = true) {
     try {
         data = await response.json();
         if (data?.message) {
-            notification(data.message, 'error');
-            throw new Error(data.message);
+            throw new ExpectedIssue(data.message);
+            return;
         }
     } catch (error) {
         throw new Error(error);
@@ -39,24 +43,24 @@ export default async function handleResponse(response, customShow = true) {
 
     switch (response.status) {
         case 400:
-            throw new Error('Invalid request data'); // No need for data.message
+            throw new ExpectedIssue('Invalid request data'); // No need for data.message
         case 401:
-            if (showNotification && customShow) {
+            if (showNotification) {
                 notification('Token expired or invalid. Please re-login.', 'error');
             }
             setTimeout(() => window.location.reload(), 1000); // 1 second delay
             break;
         case 403:
-            throw new Error('Forbidden. You do not have permission to perform this action.');
+            throw new ExpectedIssue('Forbidden. You do not have permission to perform this action.');
         case 404:
-            throw new Error('Resource not found');
+            throw new ExpectedIssue('Resource not found');
         case 409:
-            throw new Error('Conflict: Resource already exists or is in use');
+            throw new ExpectedIssue('Conflict: Resource already exists or is in use');
         case 422:
-            throw new Error('Token expired or invalid. Please re-login.');
+            throw new ExpectedIssue('Token expired or invalid. Please re-login.');
         case 500:
-            throw new Error('Internal server error');
+            throw new ExpectedIssue('Internal server error');
         default:
-            throw new Error(`Request failed with status ${response.status}`);
+            throw new ExpectedIssue(`Request failed with status ${response.status}`);
     }
 }

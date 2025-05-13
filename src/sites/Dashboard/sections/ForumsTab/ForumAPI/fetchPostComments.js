@@ -1,9 +1,9 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 export default async function fetchPostComments(postId) {
-  try {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/forums/posts/${postId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -15,9 +15,5 @@ export default async function fetchPostComments(postId) {
 
     return data['comments'];
     
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error'); // Use your notification system here
-    return false;
-  }
+  });
 }

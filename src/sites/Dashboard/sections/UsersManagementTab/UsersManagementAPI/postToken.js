@@ -1,10 +1,10 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 
 export default async function postToken(tokenExpiry, token) {
-    try {
+    return errorWrapper(async () => {
         const payload = {
             tokenExpiry,
             token
@@ -21,9 +21,5 @@ export default async function postToken(tokenExpiry, token) {
         const data = await handleResponse(response);
 
         return data;
-    } catch (error) {
-        console.error(error); 
-        //notification(`${error}`, 'error'); 
-        return false;
-    }
+    });
 }

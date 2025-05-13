@@ -1,10 +1,11 @@
 import config from '../../../../../config/config';
-import notification from '../../../../ModularComponents/notification.jsx';
 import handleResponse from '../../../utils/handleResponse.js';
+import { ExpectedIssue } from '../../../utils/expectedIssue.js';
+import errorWrapper from '../../../utils/errorWrapper.js';
 
 
 export default async function fetchForumPosts() {
-  try {
+  return errorWrapper(async () => {
     const response = await fetch(`${config.baseURL}/api/forums/posts`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -14,14 +15,10 @@ export default async function fetchForumPosts() {
     const data = await handleResponse(response);
 
     if (!Array.isArray(data)) {
-      throw new Error('Received invalid response format from server');
+      throw new ExpectedIssue('Received invalid response format from server');
     }
 
     return data;
 
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    //notification(`${error}`, 'error'); // Use your notification system here
-    return false;
-  }
+  });
 }

@@ -20,15 +20,22 @@ import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // Assumin
 import './forumsStyle.css'; // Your CSS file for styling
 
 
-function ForumsTab(userInfo) {
+function ForumsTab({ userInfo, searchTerm = '' }) {
   const [loading, setLoading] = useState({ forum: true });
   const [forumPosts, setForumPosts] = useState([]);
-  const [filteredForumPosts, setFilteredForumPosts] = useState([]);
   const [activePost, setActivePost] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', post_type: 'discussion', message: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null); // Track when last updated
+
+  const filteredForumPosts = forumPosts.filter(post => 
+    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.created_at.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.author?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.post_type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   async function loadForumPosts() {
     try {
@@ -38,7 +45,6 @@ function ForumsTab(userInfo) {
         return;
       }
       setForumPosts(posts);
-      setFilteredForumPosts(posts); // Apply filtering here if needed
       setLastUpdated(Date.now()); // Update last updated time
     } catch (error) {
 
@@ -144,7 +150,6 @@ function ForumsTab(userInfo) {
     // Fetch updated post data after the like
     const updatedPosts = await fetchForumPosts();
     setForumPosts(updatedPosts);
-    setFilteredForumPosts(updatedPosts);
   
     const updatedPost = updatedPosts.find(p => p.id === postId);
     if (updatedPost) {
@@ -160,7 +165,6 @@ function ForumsTab(userInfo) {
     // Fetch updated post data after the dislike
     const updatedPosts = await fetchForumPosts();
     setForumPosts(updatedPosts);
-    setFilteredForumPosts(updatedPosts);
   
     const updatedPost = updatedPosts.find(p => p.id === postId);
     if (updatedPost) {

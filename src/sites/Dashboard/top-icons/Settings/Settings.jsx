@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon, faBell, faBellSlash, faUser, faLock, faUserShield, faLanguage } from '@fortawesome/free-solid-svg-icons';
 import notification from '../../../ModularComponents/notification';
-import { setNotificationEnabled } from '../../utils/handleResponse';
 import './settingsStyle.css';
 
 function Settings() {
@@ -14,14 +13,13 @@ function Settings() {
 
     const toggleDarkMode = () => {
         setIsDarkMode(!isDarkMode);
-        // You would typically implement theme switching logic here
     };
 
     const toggleNotifications = () => {
         const newValue = !showNotifications;
-        setShowNotifications(newValue); // ✅ just updates state
-        setNotificationEnabled(newValue);
-        notification(`Notifications ${newValue ? 'on' : 'off'}`, 'info'); // ✅ triggers after state change is queued
+        setShowNotifications(newValue);
+        localStorage.setItem('settings', JSON.stringify({ showNotification: newValue }));
+        notification(`Notifications ${newValue ? 'on' : 'off'}`, 'info');
     };
 
     return (

@@ -7,7 +7,6 @@ import {
   faHouse
 } from '@fortawesome/free-solid-svg-icons';
 import './dashboardStyle.css';
-import { setNotificationEnabled } from './utils/handleResponse';
 import notification from '../ModularComponents/notification';
 import ServersTab from './sections/ServersTab/ServersTab';
 import UserManagementTab from './sections/UsersManagementTab/UsersManagementTab';
@@ -15,6 +14,7 @@ import FilesTab from './sections/FilesTab/FilesTab';
 import ForumsTab from './sections/ForumsTab/ForumsTab';
 import ConsoleTab from './sections/ConsoleTab/ConsoleTab';
 import HomeTab from './sections/HomeTab/HomeTab';
+import ProfilesTab from './sections/ProfilesTab/ProfilesTab';
 import Messages from './top-icons/Messages/Messages';
 import Settings from './top-icons/Settings/Settings';
 import getUserInfo from './utils/getUserInfo';
@@ -52,9 +52,7 @@ function Dashboard() {
         }
     
         const interval = setInterval(periodicTokenCheck, 5 * 60 * 1000);
-    
-        setNotificationEnabled(showNotifications); // ✅ will now trigger when showNotifications changes
-    
+        
         return () => {
             isMounted = false;
             clearInterval(interval);
@@ -64,6 +62,7 @@ function Dashboard() {
     const toggleNotifications = () => {
         const newValue = !showNotifications;
         setShowNotifications(newValue); // ✅ just updates state
+        localStorage.setItem('settings', JSON.stringify({ showNotification: newValue }));
         notification(`Notifications ${newValue ? 'on' : 'off'}`, 'info'); // ✅ triggers after state change is queued
     };
 
@@ -75,12 +74,13 @@ function Dashboard() {
     const renderActiveTab = () => {
         localStorage.setItem('activeTab', activeTab);
         switch (activeTab) {
-            case 'servers': return <ServersTab userInfo={userInfo} />;
-            case 'userManagement': return <UserManagementTab userInfo={userInfo} />;
-            case 'files': return <FilesTab userInfo={userInfo} />;
-            case 'forums': return <ForumsTab userInfo={userInfo} />;
-            case 'console': return <ConsoleTab userInfo={userInfo} />;
-            case 'home': return <HomeTab userInfo={userInfo} />;
+            case 'servers': return <ServersTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'userManagement': return <UserManagementTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'profiles': return <ProfilesTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'files': return <FilesTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'forums': return <ForumsTab userInfo={userInfo} searchTerm={searchQuery} />;
+            case 'console': return <ConsoleTab userInfo={userInfo}/>;
+            case 'home': return <HomeTab userInfo={userInfo}/>;
             default: return <HomeTab userInfo={userInfo} />;
         }
     };
@@ -90,6 +90,7 @@ function Dashboard() {
         { key: 'servers', label: 'Servers', icon: faServer, adminOnly: false, showLoading: 'servers' },
         { key: 'files', label: userInfo.is_admin ? 'File Manager' : 'Files', icon: userInfo.is_admin ? faFileUpload : faFileDownload, adminOnly: false, showLoading: 'files' },
         { key: 'forums', label: 'Community Forum', icon: faComments, adminOnly: false, showLoading: 'forum' },
+        { key: 'profiles', label: 'Profiles', icon: faUsers, adminOnly: false, showLoading: null },
         { key: 'console', label: 'Console', icon: faTerminal, adminOnly: true, showLoading: null },
         { key: 'userManagement', label: 'User Management', icon: faUsers, adminOnly: true, showLoading: 'users' },
     ];
