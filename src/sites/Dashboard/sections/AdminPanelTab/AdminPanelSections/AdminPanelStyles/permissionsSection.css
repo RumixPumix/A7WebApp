@@ -1,0 +1,37 @@
+
+.permissions-section-permissions-table-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.permissions-section-permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.permissions-section-permissions-table th {
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+}
+
+.permissions-section-permissions-table td {
+  padding: 12px 15px;
+  border-top: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.permissions-section-role-chip {
+  display: inline-block;
+  background-color: #e9ecef;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-right: 5px;
+  color: #495057;
+}

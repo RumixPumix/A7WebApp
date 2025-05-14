@@ -12,9 +12,11 @@ import fetchProfile from './ProfilesAPI/fetchProfile';
 import Spinner from '../../../ModularComponents/spinner.jsx';
 import postProfileDetails from './ProfilesAPI/postProfileDetails';
 import uploadProfileAvatar from './ProfilesAPI/uploadProfileAvatar';
-import banUser from '../AdminPanelTab/AdminPanelAPI/banUser';
-import unbanUser from '../AdminPanelTab/AdminPanelAPI/unbanUser';
-import deleteProfile from '../AdminPanelTab/AdminPanelAPI/deleteUser.js';
+
+import banUser from '../AdminPanelTab/AdminPanelSections/AdminPanelAPI/banUser';
+import unbanUser from '../AdminPanelTab/AdminPanelSections/AdminPanelAPI/unbanUser';
+import deleteProfile from '../AdminPanelTab/AdminPanelSections/AdminPanelAPI/deleteUser.js';
+
 import './profileStyle.css';
 
 function ProfilesTab({ userInfo, searchTerm = '' }) {

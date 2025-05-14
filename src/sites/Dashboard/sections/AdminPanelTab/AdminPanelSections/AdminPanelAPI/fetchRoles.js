@@ -1,6 +1,6 @@
-import errorWrapper from '../../../utils/errorWrapper.js';
-import config from "../../../../../config/config";
-import handleResponse from '../../../utils/handleResponse.js';
+import errorWrapper from '../../../../utils/errorWrapper.js';
+import config from "../../../../../../config/config";
+import handleResponse from '../../../../utils/handleResponse.js';
 
 
 export default async function fetchRoles(){

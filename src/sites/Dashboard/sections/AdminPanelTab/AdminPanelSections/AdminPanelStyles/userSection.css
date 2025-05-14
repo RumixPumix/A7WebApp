@@ -1,0 +1,136 @@
+/* Tables */
+.user-section-user-table-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.user-section-user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-section-user-table th {
+  background: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #eaeaea;
+}
+
+.user-section-user-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-section-user-table tr:last-child td {
+  border-bottom: none;
+}
+
+.user-section-user-table tr:hover td {
+  background-color: #f9f9f9;
+}
+
+/* Modal */
+.user-section-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.user-section-modal h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.user-section-modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+/* Forms */
+.user-section-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.user-section-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.user-section-form-group input,
+.user-section-form-group select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.user-section-form-group input:focus,
+.user-section-form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.user-section-password-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.user-section-password-input-wrapper input {
+  flex: 1;
+}
+
+.user-section-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.user-section-role-badge.admin {
+  background-color: #6610f2;
+}
+
+.user-section-role-badge.user {
+  background-color: #20c997;
+}
+
+.user-section-role-badge.guest {
+  background-color: #17a2b8;
+}
+
+.user-section-role-badge.moderator {
+  background-color: #dc3545;
+}
+
+.user-section-role-badge.uploader {
+  background-color: #fd7e14;
+}

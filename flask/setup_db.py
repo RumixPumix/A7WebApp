@@ -102,7 +102,7 @@ def create_json_files():
     roles_data = {
         "roles": [
             {"name": "Admin", "description": "Administrator role with all permissions", "permissions": [
-                "admin.route.get.users", "admin.route.create.user", "admin.route.update.user",
+                "admin.route.get.users", "admin.route.create.user", "admin.route.update.user", "admin.route.delete.user",
                 "admin.route.get.tokens", "admin.route.create.token", "admin.route.delete.token",
                 "admin.route.ban.user", "admin.route.unban.user.all", "admin.route.get.user", "admin.route.get.roles",
                 "admin.route.create.role", "admin.route.update.role", "admin.route.delete.role", "admin.route.get.permissions",

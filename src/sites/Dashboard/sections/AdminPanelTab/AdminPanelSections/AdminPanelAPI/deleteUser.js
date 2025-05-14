@@ -1,6 +1,6 @@
-import config from '../../../../../config/config.js';
-import handleResponse from '../../../utils/handleResponse.js';
-import errorWrapper from '../../../utils/errorWrapper.js';
+import config from '../../../../../../config/config.js';
+import handleResponse from '../../../../utils/handleResponse.js';
+import errorWrapper from '../../../../utils/errorWrapper.js';
 
 export default async function deleteUser(userId) {
     return errorWrapper(async () => {

@@ -7,6 +7,7 @@
                 "admin.route.get.users",
                 "admin.route.create.user",
                 "admin.route.update.user",
+                "admin.route.delete.user",
                 "admin.route.get.tokens",
                 "admin.route.create.token",
                 "admin.route.delete.token",

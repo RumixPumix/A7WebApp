@@ -1,0 +1,173 @@
+/* Modal */
+.role-section-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow-y: auto; /* Add this to enable scrolling for the modal */
+  padding: 20px;
+}
+
+.role-section-modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  max-height: 90vh; /* Limit height */
+  overflow-y: auto;
+}
+
+.role-section-modal h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.role-section-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.role-section-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.role-section-form-group input,
+.role-section-form-group select,
+.role-section-form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.role-section-form-group input:focus,
+.role-section-form-group select:focus,
+.role-section-form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.role-section-form-group textarea {
+  min-height: 100px; /* Better default height than just rows="3" */
+  max-height: 200px;
+  resize: vertical; /* Allows user to resize vertically only */
+  line-height: 1.5; /* Better text spacing */
+}
+
+.role-section-permissions-dnd-container {
+  display: flex;
+  gap: 20px;
+}
+
+.role-section-permissions-column {
+  flex: 1;
+}
+
+.role-section-permissions-list {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  min-height: 200px;
+  max-height: 300px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.role-section-permissions-list.active {
+  background-color: #f8fff0;
+}
+
+.role-section-permissions-list.inactive {
+  background-color: #f9f9f9;
+}
+
+.role-section-permission-item {
+  padding: 8px 12px;
+  margin: 5px 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.role-section-permission-item:hover {
+  background-color: #f0f0f0;
+}
+
+.role-section-permissions-column {
+  flex: 1;
+}
+
+.role-section-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.role-section-roles-table-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.role-section-roles-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.role-section-roles-table th {
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+}
+
+.role-section-roles-table td {
+  padding: 12px 15px;
+  border-top: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.role-section-role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.role-section-role-badge.admin {
+  background-color: #6610f2;
+}
+
+.role-section-role-badge.user {
+  background-color: #20c997;
+}
+
+.role-section-role-badge.guest {
+  background-color: #17a2b8;
+}
+
+.role-section-role-badge.moderator {
+  background-color: #dc3545;
+}
+
+.role-section-role-badge.uploader {
+  background-color: #fd7e14;
+}

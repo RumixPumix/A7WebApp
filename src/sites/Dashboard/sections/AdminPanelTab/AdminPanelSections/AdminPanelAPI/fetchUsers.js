@@ -1,7 +1,7 @@
-import config from '../../../../../config/config.js';
-import handleResponse from '../../../utils/handleResponse.js';
-import { ExpectedIssue } from '../../../utils/expectedIssue.js';
-import errorWrapper from '../../../utils/errorWrapper.js';
+import config from '../../../../../../config/config.js';
+import handleResponse from '../../../../utils/handleResponse.js';
+import { ExpectedIssue } from '../../../../utils/expectedIssue.js';
+import errorWrapper from '../../../../utils/errorWrapper.js';
 
 
 /**
