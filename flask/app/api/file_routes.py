@@ -197,14 +197,14 @@ def check_upload_limits(user_id, file_size):
     user_uploads = data[user_id]["uploads"]
     
     # Check files uploaded in the last hour
-    one_hour_ago = datetime.now() - timedelta(hours=1)
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
     file_count_last_hour = sum(1 for upload in user_uploads if datetime.fromisoformat(upload["timestamp"]) > one_hour_ago)
 
     if file_count_last_hour >= MAX_FILES_PER_HOUR:
         return False, "You have exceeded the maximum file upload limit of 10 files per hour."
 
     # Check total file size uploaded today
-    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     total_uploaded_size_today = sum(upload["size"] for upload in user_uploads if datetime.fromisoformat(upload["timestamp"]) > today_start)
 
     if total_uploaded_size_today + file_size > MAX_SIZE_PER_DAY:
@@ -220,14 +220,14 @@ def get_remaining_limits(user_id):
         data[user_id] = {"uploads": []}
     user_uploads = data[user_id]["uploads"]
     # Check files uploaded in the last hour
-    one_hour_ago = datetime.now() - timedelta(hours=1)
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
     file_count_last_hour = sum(1 for upload in user_uploads if datetime.fromisoformat(upload["timestamp"]) > one_hour_ago)
     if file_count_last_hour >= MAX_FILES_PER_HOUR:
         return_data["per_hour"] = "You have exceeded the maximum file upload limit of 10 files per hour."
     else:
         return_data["per_hour"] = f"Files today: {file_count_last_hour}/{MAX_FILES_PER_HOUR}"
     # Check total file size uploaded today
-    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     total_uploaded_size_today = sum(upload["size"] for upload in user_uploads if datetime.fromisoformat(upload["timestamp"]) > today_start)
     if total_uploaded_size_today >= MAX_SIZE_PER_DAY:
         return_data["today"] = "You have exceeded the maximum total upload size of 50 GB per day."
@@ -273,7 +273,7 @@ def get_files(parent_id, current_user, permissions_status):
 
         return jsonify({
             "message": "Files retrieved successfully",
-            "data": {"files":[file.to_dict() for file in files], "limits": limits}
+            "data": {"files":[file.to_dict(current_user.timezone) for file in files], "limits": limits}
         }), 200
 
     except Exception as e:
@@ -312,7 +312,7 @@ def get_private_files(parent_id, current_user, permissions_status):
 
         return jsonify({
             "message": "Private files retrieved successfully",
-            "data": {"files":[file.to_dict() for file in files], "limits": limits}
+            "data": {"files":[file.to_dict(current_user.timezone) for file in files], "limits": limits}
         }), 200
 
     except Exception as e:
@@ -383,7 +383,7 @@ def upload_file(current_user, permissions_status):
         ).first()
 
         if existing_file:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
             filename = f"{timestamp}_{filename}"
 
         #Calculate the file path
@@ -427,7 +427,7 @@ def upload_file(current_user, permissions_status):
         db.session.commit()
 
         upload_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.utcnow().isoformat(),
             "size": file_size
         }
 

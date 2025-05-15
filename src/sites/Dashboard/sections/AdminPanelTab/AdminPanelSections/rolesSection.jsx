@@ -19,7 +19,7 @@ export default function RolesSection({ userInfo, searchTerm = ''}) {
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [draggedPermission, setDraggedPermission] = useState(null);
-    const [sortBy, setSortBy] = useState('name');
+    const [sortBy, setSortBy] = useState('name_asc');
 
     const filteredRoles = useMemo(() => {
       const filtered = roles.filter(role =>
@@ -30,8 +30,8 @@ export default function RolesSection({ userInfo, searchTerm = ''}) {
       const sorted = filtered.sort((a, b) => {
         if (sortBy === 'name_asc') return a.name.localeCompare(b.name);
         if (sortBy === 'name_desc') return b.name.localeCompare(a.name);
-        if (sortBy === 'role_count_low_high') return a.permissions.length - b.permissions.length;
-        if (sortBy === 'role_count_hight_low') return b.permissions.length - a.permissions.length;
+        if (sortBy === 'permission_count_low_high') return a.permissions.length - b.permissions.length;
+        if (sortBy === 'permission_count_high_low') return b.permissions.length - a.permissions.length;
         return 0;
       });
 
@@ -249,8 +249,8 @@ return (
         >
           <option value="name_asc">Name (A-Z)</option>
           <option value="name_desc">Name (Z-A)</option>
-          <option value="role_count_hight_low">Perm. Count (H-L)</option>
-          <option value="role_count_low_high">Perm. Count (L-H)</option>
+          <option value="permission_count_high_low">Perm. Count (H-L)</option>
+          <option value="permission_count_low_high">Perm. Count (L-H)</option>
         </select>
       </div>
     </div>
@@ -266,7 +266,7 @@ return (
               <th>Role</th>
               <th>Description</th>
               <th>Permissions Count</th>
-              <th className="admin-panel-right-align-action">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -279,29 +279,31 @@ return (
                 </td>
                 <td>{role.description ? highlight(role.description, searchTerm) : '-'}</td>
                 <td>{role.permissions?.length || 0}</td>
-                <td className="admin-panel-right-align">
-                  <button
-                    className="admin-panel-btn-icon"
-                    onClick={() => handleEditRole(role)}
-                    title="Edit Role"
-                  >
-                    <FontAwesomeIcon icon={faEdit} />
-                  </button>
-                  <button
-                    className="admin-panel-btn-icon danger"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Are you sure you want to delete the ${role.name} role?`,
-                        )
-                      ) {
-                        handleDeleteRole(role.id);
-                      }
-                    }}
-                    title="Delete Role"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
+                <td>
+                  <div className = "role-section-actions">
+                    <button
+                      className="admin-panel-btn-icon"
+                      onClick={() => handleEditRole(role)}
+                      title="Edit Role"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      className="admin-panel-btn-icon danger"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Are you sure you want to delete the ${role.name} role?`,
+                          )
+                        ) {
+                          handleDeleteRole(role.id);
+                        }
+                      }}
+                      title="Delete Role"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

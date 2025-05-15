@@ -20,13 +20,21 @@ class RegistrationToken(db.Model):
         self.created_by = created_by
         self.expires_at = datetime.utcnow() + timedelta(days=days_valid)
 
-    def is_valid(self):
-        return (
-            not self.is_used 
-            and datetime.utcnow() < self.expires_at
-        )
-
     def mark_as_used(self, user_id):
         self.is_used = True
         self.used_by = user_id
         self.used_at = datetime.utcnow()
+
+    def to_dict(self, timezone):
+        from app.api.utils.timezone_convert import convert_utc_to_user_tz
+
+        return {
+            'id': self.id,
+            'token': self.token,
+            'is_used': self.is_used,
+            'created_at': convert_utc_to_user_tz(self.created_at, timezone) if self.created_at else None,
+            'expires_at': convert_utc_to_user_tz(self.expires_at, timezone) if self.expires_at else None,
+            'created_by': self.creator.username if self.creator else None,
+            'used_by': self.user.username if self.user else None,
+            'used_at': convert_utc_to_user_tz(self.used_at, timezone) if self.used_at else None,
+        }

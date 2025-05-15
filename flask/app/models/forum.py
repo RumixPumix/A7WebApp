@@ -1,7 +1,6 @@
 from app import db
 from datetime import datetime
 
-
 class ForumPost(db.Model):
     __tablename__ = 'forum_posts'
     
@@ -40,14 +39,16 @@ class ForumPost(db.Model):
     def __repr__(self):
         return f'<ForumPost {self.title}>'
     
-    def to_dict(self, with_comments=False):
+    def to_dict(self, timezone, with_comments=False):
+        from app.api.utils.timezone_convert import convert_utc_to_user_tz
+
         data = {
             'id': self.id,
             'title': self.title,
             'message': self.message,
             'post_type': self.post_type,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': convert_utc_to_user_tz(self.created_at, timezone),
+            'updated_at': convert_utc_to_user_tz(self.updated_at, timezone),
             'user_id': self.user_id,
             'author': {
             'username': self.author.username if self.author else 'Unknown',
@@ -59,7 +60,7 @@ class ForumPost(db.Model):
         }
         
         if with_comments:
-            data['comments'] = [comment.to_dict() for comment in self.comments.all()]
+            data['comments'] = [comment.to_dict(timezone) for comment in self.comments.all()]
         
         return data
 
@@ -104,12 +105,14 @@ class ForumComment(db.Model):
     
     def __repr__(self):
         return f'<ForumComment {self.id}>'
-    def to_dict(self):
+    def to_dict(self, timezone):
+        from app.api.utils.timezone_convert import convert_utc_to_user_tz
+
         return {
             'id': self.id,
             'message': self.message,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': convert_utc_to_user_tz(self.created_at, timezone),
+            'updated_at': convert_utc_to_user_tz(self.updated_at, timezone),
             'user_id': self.user_id,
             'author': self.author.username,  # Assuming User model has username
             'post_id': self.post_id,

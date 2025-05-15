@@ -71,7 +71,6 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
   const handleNewPostSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading({ forum: true });
       let result;
       if (isEditing && activePost) {
         result = await updatePost(activePost.id, newPost);  // <--- call your edit API here
@@ -181,24 +180,44 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     if (!message) return;
 
     try {
-      setLoading({ forum: true });
+      console.log('Submitting comment:', message);
       const result  = await submitComment(activePost.id, message);
       if (!result) {
+        console.log('Failed to submit comment');
         setLoading({ forum: false });
         return;
       }
-      await loadForumPosts();
       const comments = await fetchPostComments(activePost.id);
       if (!comments) {
         setLoading({ forum: false });
         return;
       }
+      console.log('Comments before:', activePost.comments);
       activePost.comments = comments;
+      setActivePost(activePost);
+      console.log('Comments after:', activePost.comments);
       form.reset();
     } catch (error) {
 
     }
   };
+
+  const handleLikeComment = async (commentId, postId) => {
+    const result = await likeComment(commentId, postId);
+    if (!result) return;
+
+    activePost.comments = await fetchPostComments(postId);
+    setActivePost(activePost);
+  };
+
+  const handleDislikeComment = async (commentId, postId) => {
+    const result = await dislikeComment(commentId, postId);
+    if (!result) return;
+    activePost.comments = await fetchPostComments(postId);
+    setActivePost(activePost);
+  };
+
+
 
   if (loading.forum) {
     return (
@@ -268,7 +287,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
             <h2>{activePost.title}</h2>
             <div className="post-meta">
               <span>Posted by {activePost.author?.username || 'Unknown'}</span>
-              <span>{new Date(activePost.created_at).toLocaleString()}</span>
+              <span>{activePost.created_at}</span>
               <span className="post-type">{activePost.post_type}</span>
             </div>
           </div>
@@ -296,15 +315,21 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
             {activePost.comments.map(comment => (
               <div key={comment.id} className="comment">
                 <div className="comment-header">
-                  <span>{comment.author.username}</span>
-                  <span>{new Date(comment.created_at).toLocaleString()}</span>
+                  <span>{comment.author}</span>
+                  <span>{comment.created_at}</span>
                 </div>
                 <div className="comment-content">
                   <p>{comment.message}</p>
                 </div>
                 <div className="comment-actions">
                   <button>Reply</button>
-                  <span>Likes: {comment.likes}</span>
+                  <div>
+                    <button onClick={() => handleLikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsUp} /></button>
+                    <span>{comment.likes}</span>
+                    <button onClick={() => handleDislikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsDown} /></button>
+                    <span>{comment.dislikes}</span>
+                    
+                  </div>
                 </div>
               </div>
             ))}
@@ -351,7 +376,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                 </div>
                 <div className="post-footer">
                     <span>Posted by {post.author?.username || 'Unknown'}</span>
-                    <span>{new Date(post.created_at).toLocaleString()}</span>
+                    <span>{post.created_at}</span>
                     <span>{post.comment_count || 0} comments</span>
                 </div>
                 </div>

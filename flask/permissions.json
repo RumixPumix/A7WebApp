@@ -37,6 +37,10 @@
             "description": "Unban all users (admin only)"
         },
         {
+            "name": "admin.route.delete.user",
+            "description": "Delete a user"
+        },
+        {
             "name": "admin.route.get.user",
             "description": "Get a specific user"
         },

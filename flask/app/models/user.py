@@ -16,6 +16,7 @@ class User(db.Model):
     last_login = db.Column(db.DateTime, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    timezone = db.Column(db.String(50), nullable=True)
 
     def set_password(self, password):
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -37,4 +38,18 @@ class User(db.Model):
         
         self.role = role
         self.role_id = role.id
+    
+    def to_dict(self, timezone):
+        from app.api.utils.timezone_convert import convert_utc_to_user_tz
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'email_verified': self.email_verified,
+            'role': self.role.name if self.role else None,
+            'is_active': self.is_active,
+            'last_login': convert_utc_to_user_tz(self.last_login, timezone),
+            'created_at': convert_utc_to_user_tz(self.created_at, timezone),
+        }
+    
 

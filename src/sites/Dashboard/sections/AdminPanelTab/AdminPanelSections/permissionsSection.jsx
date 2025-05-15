@@ -176,7 +176,7 @@ export default function PermissionsSection({ userInfo, searchTerm = '' }) {
                                     <td>{permission.description ? highlight(permission.description, searchTerm) : '-'}</td>
                                     <td>
                                         {getRolesWithPermission(permission.id).map(role => (
-                                            <span key={role.id} className="permissions-section-role-chip">
+                                            <span key={role.id} className={`permissions-section-role-chip ${role.name.toLowerCase()}`}>
                                                 {role.name}
                                             </span>
                                         ))}

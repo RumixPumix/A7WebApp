@@ -358,7 +358,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
                                     </td>
                                     <td>{file.is_folder ? '' : formatFileSize(file.file_size)}</td>
                                     <td>{file.is_folder ? '' : (file.mime_type || file.file_name.split('.').pop().toUpperCase())}</td>
-                                    <td>{file.is_folder ? '' : formatDate(file.uploaded_at)}</td>
+                                    <td>{file.is_folder ? '' : file.uploaded_at}</td>
                                     <td>{file.is_folder ? '' : file.uploaded_by}</td>
                                     <td className="ft-right-align">
                                         {!file.is_folder && allowDownload(file) && (
@@ -405,12 +405,6 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function formatDate(isoString) {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    return date.toLocaleString();
 }
 
 export default FilesTab;

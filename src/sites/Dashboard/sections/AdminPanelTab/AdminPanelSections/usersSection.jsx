@@ -222,7 +222,7 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
                                 <th>Joined</th>
                                 <th>Last Login</th>
                                 <th>Role</th>
-                                <th className="admin-panel-right-align-action">Actions</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -232,31 +232,33 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
                                     <td>{user.created_at}</td>
                                     <td>{user.last_login || "Never"}</td>
                                     <td>
-                                        <span className={`user-section-role-badge ${user.role}`}>{user.role}</span>
+                                        <span className={`user-section-role-badge ${user.role.toLowerCase()}`}>{user.role}</span>
                                     </td>
-                                    <td className="admin-panel-right-align">
-                                        <button
-                                        className="admin-panel-btn-icon"
-                                        onClick={() => handleEditUser(user)}
-                                        title="Edit User"
-                                        >
-                                        <FontAwesomeIcon icon={faUserCog} />
-                                        </button>
-                                        <button
-                                        className="admin-panel-btn-icon danger"
-                                        onClick={() => {
-                                            if (
-                                            window.confirm(
-                                                `Are you sure you want to delete ${user.username}?`,
-                                            )
-                                            ) {
-                                            handleDeleteUser(user.id);
-                                            }
-                                        }}
-                                        title="Delete User"
-                                        >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                        </button>
+                                    <td>
+                                        <div className = "user-section-actions">
+                                            <button
+                                            className="admin-panel-btn-icon"
+                                            onClick={() => handleEditUser(user)}
+                                            title="Edit User"
+                                            >
+                                            <FontAwesomeIcon icon={faUserCog} />
+                                            </button>
+                                            <button
+                                            className="admin-panel-btn-icon danger"
+                                            onClick={() => {
+                                                if (
+                                                window.confirm(
+                                                    `Are you sure you want to delete ${user.username}?`,
+                                                )
+                                                ) {
+                                                handleDeleteUser(user.id);
+                                                }
+                                            }}
+                                            title="Delete User"
+                                            >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

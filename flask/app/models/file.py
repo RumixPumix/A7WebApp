@@ -25,7 +25,9 @@ class File(db.Model):
         backref=db.backref('children', cascade='all, delete-orphan', lazy='dynamic')
     )
 
-    def to_dict(self):
+    def to_dict(self, timezone):
+        from app.api.utils.timezone_convert import convert_utc_to_user_tz
+
         return {
             'id': self.id,
             'file_name': self.file_name,
@@ -36,5 +38,5 @@ class File(db.Model):
             'is_folder': self.is_folder,
             'parent_id': self.parent_id,
             'uploaded_by': self.user.username if self.user else None,
-            'uploaded_at': self.uploaded_at.isoformat(),
+            'uploaded_at': convert_utc_to_user_tz(self.uploaded_at, timezone)
         }

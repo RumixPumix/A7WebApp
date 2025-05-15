@@ -173,7 +173,7 @@ class EmailVerificationSystem:
                     <strong>The Ace7Esports Team</strong></p>
                     
                     <div class="footer">
-                        © {datetime.datetime.now().year} Ace7Esports. All rights reserved.<br>
+                        © {datetime.datetime.utcnow().year} Ace7Esports. All rights reserved.<br>
                         <a href="https://ace7esports.com">ace7esports.com</a> | 
                         <a href="https://ace7esports.com/privacy">Privacy Policy</a> | 
                         <a href="https://ace7esports.com/contact">Contact Us</a>

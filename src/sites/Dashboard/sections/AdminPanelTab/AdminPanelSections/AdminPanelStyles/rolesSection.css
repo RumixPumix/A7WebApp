@@ -135,12 +135,21 @@
   text-align: left;
   font-weight: 600;
   color: #495057;
+  text-align: center;
 }
 
 .role-section-roles-table td {
   padding: 12px 15px;
   border-top: 1px solid #e9ecef;
   vertical-align: middle;
+  text-align: center;
+}
+
+.role-section-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .role-section-role-badge {

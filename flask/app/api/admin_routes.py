@@ -4,9 +4,12 @@ from app.models.user import User
 from app.models.token import RegistrationToken
 from app.models.role import Role
 from app.models.permission import Permission
+from datetime import datetime
 import secrets
 import string
+from app.api.utils.timezone_convert import convert_utc_to_user_tz
 from app.api.permissions_wrapper import permissions_wrapper
+from sqlalchemy.orm import joinedload
 # Define the blueprint
 admin_bp = Blueprint('admin_bp', __name__)
 
@@ -16,10 +19,9 @@ admin_bp = Blueprint('admin_bp', __name__)
 def get_users(current_user, permissions_status):
     try:
         users = User.query.all()
-        user_list = [{"id": u.id, "username": u.username, "last_login":u.last_login,"created_at":u.created_at ,"role": u.role.name if u.role else None} for u in users]
         return jsonify({
             "message": "Users retrieved successfully",
-            "data": user_list
+            "data": [user.to_dict(current_user.timezone) for user in users]
         }), 200
 
     except Exception as e:
@@ -146,46 +148,30 @@ def update_user(user_id, current_user, permissions_status):
         return jsonify({
             "message": str(e)
         }), 500
-    
 
 @admin_bp.route('/tokens', methods=['GET'])
 @permissions_wrapper('admin.route.get.tokens')
 def get_tokens(current_user, permissions_status):
     try:
-        # Get all tokens with creator/user relationships
+        # Delete expired and unused tokens directly in the DB
+        RegistrationToken.query.filter(
+            RegistrationToken.expires_at < datetime.utcnow(),
+            RegistrationToken.is_used == False
+        ).delete(synchronize_session='fetch')
+        db.session.commit()
+
+        # Fetch remaining tokens with relationships
         tokens = RegistrationToken.query \
-        .options(
-            db.joinedload(RegistrationToken.creator),
-            db.joinedload(RegistrationToken.user)
-        ) \
-        .order_by(RegistrationToken.created_at.desc()) \
-        .all()
+            .options(
+                joinedload(RegistrationToken.creator),
+                joinedload(RegistrationToken.user)
+            ) \
+            .all()
         
-        # Format response
-        token_list = []
-        for token in tokens:
-            token_data = {
-                "id": token.id,
-                "token": token.token,
-                "is_used": token.is_used,
-                "created_at": token.created_at.isoformat() if token.created_at else None,
-                "expires_at": token.expires_at.isoformat() if token.expires_at else None,
-                "used_at": token.used_at.isoformat() if token.used_at else None,
-                "is_valid": token.is_valid(),
-                "creator": {
-                    "id": token.creator.id,
-                    "username": token.creator.username
-                } if token.creator else None,
-                "user": {
-                    "id": token.user.id,
-                    "username": token.user.username
-                } if token.user else None
-            }
-            token_list.append(token_data)
         
         return jsonify({
             "message": "Tokens retrieved successfully",
-            "data": token_list
+            "data": [token.to_dict(current_user.timezone) for token in tokens]
         }), 200
     except Exception as e:
         return jsonify({
@@ -197,10 +183,9 @@ def get_tokens(current_user, permissions_status):
 def get_permissions(current_user, permissions_status):
     try:
         permissions = Permission.query.all()
-        permission_list = [p.to_dict() for p in permissions]
         return jsonify({
             "message": "Permissions retrieved successfully",
-            "data": permission_list
+            "data": [p.to_dict() for p in permissions]
         }), 200
     except Exception as e:
         print("Error occured:", str(e))
@@ -211,11 +196,10 @@ def get_permissions(current_user, permissions_status):
 def get_roles(current_user, permissions_status):
     try:
         roles = Role.query.all()
-        role_list = [r.to_dict(True) for r in roles]
 
         return jsonify({
             "message": "Roles retrieved successfully",
-            "data": role_list
+            "data": [r.to_dict(True) for r in roles]
         }), 200
     except Exception as e:
         print("Error occured:", str(e))

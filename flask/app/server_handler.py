@@ -123,7 +123,7 @@ def _monitor_server_output(server: Server, process: subprocess.Popen):
                     break
                 if output:
                     output = output.strip()
-                    timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+                    timestamp = datetime.datetime.utcnow().strftime("[%Y-%m-%d %H:%M:%S]")
                     log_line = f"{timestamp} {output}\n"
                     log_file.write(log_line)
                     logger.info(f"[Server {server.id}] {output}")

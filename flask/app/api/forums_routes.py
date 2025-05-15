@@ -11,20 +11,11 @@ forums_bp = Blueprint('forums_bp', __name__)
 @forums_bp.route('/posts', methods=['GET'])
 @permissions_wrapper('forum.routes.get.posts')
 def get_posts(current_user, permissions_status):
-    """Get all forum posts with pagination"""
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    post_type = request.args.get('type')  # Optional filter by post type
     
-    query = ForumPost.query
-    
-    if post_type:
-        query = query.filter_by(post_type=post_type)
-    
-    posts = query.order_by(ForumPost.created_at.desc()).paginate(page=page, per_page=per_page)
-    
+    posts = ForumPost.query.order_by(ForumPost.created_at.desc()).all()    
+
     return jsonify({
-        'data': [post.to_dict() for post in posts.items],
+        'data': [post.to_dict(current_user.timezone) for post in posts],
         'message': "Posts retrieved successfully",
     }), 200
 
@@ -37,7 +28,7 @@ def get_post(post_id, current_user, permissions_status):
     if not post:
         return jsonify({'message': 'Post not found'}), 404
     return jsonify({
-        'data': post.to_dict(with_comments=True),
+        'data': post.to_dict(current_user.timezone, with_comments=True),
         'message': "Post comments retrieved successfully",
         }), 200
 
@@ -128,8 +119,11 @@ def delete_post(post_id, current_user, permissions_status):
 @forums_bp.route('/posts/<int:post_id>/like', methods=['POST'])
 @permissions_wrapper('forum.routes.like.post')
 def like_post(post_id, current_user, permissions_status):
-    
     """Like a forum post"""
+
+    post = ForumPost.query.get(post_id)
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
     
     existing_like = db.session.query(post_likes).filter_by(
         post_id=post_id, user_id=current_user.id).first()
@@ -167,6 +161,10 @@ def like_post(post_id, current_user, permissions_status):
 @permissions_wrapper('forum.routes.dislike.post')
 def dislike_post(post_id, current_user, permissions_status):
     """Dislike a forum post"""
+
+    post = ForumPost.query.get(post_id)
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
     
     # Check if already disliked → remove dislike (toggle off)
     existing_dislike = db.session.query(post_dislikes).filter_by(
@@ -224,3 +222,78 @@ def create_comment(post_id, current_user, permissions_status):
         "message": "Comment created successfully",
         "data": True
         }), 201
+
+#UNIMPLEMENTED
+
+@forums_bp.route('/posts/<int:post_id>/comment/<int:comment_id>/like', methods=['POST'])
+@permissions_wrapper('forum.routes.like.comment')
+def like_comment(post_id, comment_id, current_user, permissions_status):
+    """Like a comment on a post"""
+    comment = ForumComment.query.get(comment_id)
+    if not comment:
+        return jsonify({'message': 'Comment not found'}), 404
+    
+    existing_like = db.session.query(post_likes).filter_by(
+        post_id=post_id, user_id=current_user.id).first()
+    if existing_like:
+        db.session.execute(
+            post_likes.delete().where(
+                (post_likes.c.post_id == post_id) &
+                (post_likes.c.user_id == current_user.id)
+            )
+        )
+        db.session.commit()
+        return jsonify({'message': 'Like removed', 'data': True}), 200
+    # Remove dislike if exists
+    db.session.execute(
+        post_dislikes.delete().where(
+            (post_dislikes.c.post_id == post_id) &
+            (post_dislikes.c.user_id == current_user.id)
+        )
+    )
+    # Add like
+    db.session.execute(
+        post_likes.insert().values(post_id=post_id, user_id=current_user.id)
+    )
+    db.session.commit()
+    return jsonify({
+        "message": "Comment liked successfully",
+        "data": True
+        }), 201
+
+@forums_bp.route('/posts/<int:post_id>/comment/<int:comment_id>/dislike', methods=['POST'])
+@permissions_wrapper('forum.routes.dislike.comment')
+def dislike_comment(post_id, comment_id, current_user, permissions_status):
+    """Dislike a comment on a post"""
+    comment = ForumComment.query.get(comment_id)
+    if not comment:
+        return jsonify({'message': 'Comment not found'}), 404
+    
+    existing_dislike = db.session.query(post_dislikes).filter_by(
+        post_id=post_id, user_id=current_user.id).first()
+    if existing_dislike:
+        db.session.execute(
+            post_dislikes.delete().where(
+                (post_dislikes.c.post_id == post_id) &
+                (post_dislikes.c.user_id == current_user.id)
+            )
+        )
+        db.session.commit()
+        return jsonify({'message': 'Dislike removed', 'data': True}), 200
+    # Remove like if exists
+    db.session.execute(
+        post_likes.delete().where(
+            (post_likes.c.post_id == post_id) &
+            (post_likes.c.user_id == current_user.id)
+        )
+    )
+    # Add dislike
+    db.session.execute(
+        post_dislikes.insert().values(post_id=post_id, user_id=current_user.id)
+    )
+    db.session.commit()
+    return jsonify({
+        "message": "Comment disliked successfully",
+        "data": True
+        }), 201
+    

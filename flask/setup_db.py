@@ -30,6 +30,7 @@ def create_json_files():
             {"name": "admin.route.ban.user", "description": "Ban a user"},
             {"name": "admin.route.unban.user", "description": "Unban a user"},
             {"name": "admin.route.unban.user.all", "description": "Unban all users (admin only)"},
+            {"name": "admin.route.delete.user", "description": "Delete a user"},
 
             {"name": "admin.route.get.user", "description": "Get a specific user"},
             {"name": "admin.route.get.roles", "description": "Get all roles"},

@@ -58,6 +58,7 @@ def login():
 
     username = data.get('username', None)
     password = data.get('password', None)
+    timezone = data.get('timezone', None)
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
     #Validate username... 
@@ -66,6 +67,7 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password, password):
         user.last_login = datetime.utcnow()  # Update last login time
+        user.timezone = timezone  # Update timezone if provided
         db.session.commit()
         # Ensure identity is a string
         access_token = create_access_token(identity=str(user.id))  # Convert user.id to string

@@ -68,11 +68,13 @@ input:checked + .tokens-section-slider:before {
   font-weight: 600;
   color: #2c3e50;
   border-bottom: 2px solid #eaeaea;
+  text-align: center;
 }
 
 .tokens-section-token-table td {
   padding: 1rem;
   border-bottom: 1px solid #f0f0f0;
+  text-align: center;
 }
 
 .tokens-section-token-table tr:last-child td {
@@ -113,6 +115,14 @@ input:checked + .tokens-section-slider:before {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  justify-content: center;
+}
+
+.tokens-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .tokens-section-token-display-modal {

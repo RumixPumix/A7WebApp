@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faKey, faClock, faTimes, faExclamationTriangle, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faKey, faClock, faTimes, faExclamationTriangle, faEye, faEyeSlash, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../../../ModularComponents/spinner.jsx';
 import LastUpdated from '../../../../ModularComponents/lastUpdated.jsx';
 
@@ -17,16 +17,66 @@ export default function TokensSection({ userInfo, searchTerm = ''}) {
     const [showTokenModal, setShowTokenModal] = useState(false);
     const [currentToken, setCurrentToken] = useState('');
     const [selectedExpiry, setSelectedExpiry] = useState("1"); // Default to 1 day
-    const [showExpiredTokens, setShowExpiredTokens] = useState(false);
+    const [showUsedTokens, setShowUsedTokens] = useState(false);
     const [tokens, setTokens] = useState([]);
+    const [sortBy, setSortBy] = useState('status_active');
 
-    const filteredTokens = tokens.filter(token =>
+
+    const filteredTokens = tokens
+    .filter(token =>
         token.token.toLowerCase().includes(searchTerm.toLowerCase()) ||
         token.created_at.toLowerCase().includes(searchTerm.toLowerCase()) ||
         token.expires_at?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         token.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         token.used_at?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
+    .sort((a, b) => {
+        switch (sortBy) {
+        // Status sorting (Active/Inactive)
+        case 'status_active':
+            return (a.is_used === b.is_used) ? 0 : a.is_used ? 1 : -1;
+        case 'status_inactive':
+            return (a.is_used === b.is_used) ? 0 : a.is_used ? -1 : 1;
+
+        // Creation date sorting
+        case 'created_asc':
+            return new Date(a.created_at) - new Date(b.created_at);
+        case 'created_desc':
+            return new Date(b.created_at) - new Date(a.created_at);
+
+        // Expiration date sorting
+        case 'expires_asc':
+            // For tokens that are already used, push them to the bottom
+            if (a.is_used && !b.is_used) return 1;
+            if (!a.is_used && b.is_used) return -1;
+            if (a.is_used && b.is_used) return 0;
+            return new Date(a.expires_at) - new Date(b.expires_at);
+        case 'expires_desc':
+            // For tokens that are already used, push them to the bottom
+            if (a.is_used && !b.is_used) return 1;
+            if (!a.is_used && b.is_used) return -1;
+            if (a.is_used && b.is_used) return 0;
+            return new Date(b.expires_at) - new Date(a.expires_at);
+
+        // Usage date sorting
+        case 'used_asc':
+            // For tokens not used yet, push them to the bottom
+            if (!a.used_at && b.used_at) return 1;
+            if (a.used_at && !b.used_at) return -1;
+            if (!a.used_at && !b.used_at) return 0;
+            return new Date(a.used_at) - new Date(b.used_at);
+        case 'used_desc':
+            // For tokens not used yet, push them to the bottom
+            if (!a.used_at && b.used_at) return 1;
+            if (a.used_at && !b.used_at) return -1;
+            if (!a.used_at && !b.used_at) return 0;
+            return new Date(b.used_at) - new Date(a.used_at);
+
+        // Default case (shouldn't happen if all options are covered)
+        default:
+            return 0;
+        }
+    });
 
     async function loadTokensData(){
         try {
@@ -114,17 +164,47 @@ export default function TokensSection({ userInfo, searchTerm = ''}) {
             <div className="admin-panel-tab-header">
                 <h3>API Token Management</h3>
                 <div className='tokens-section-sub-header'>
-                    <label className="tokens-section-switch-label">Show Expired Tokens</label>
+                    <label className="tokens-section-switch-label">Show Used Tokens</label>
                     <label className="tokens-section-switch">
                         <input 
                         type="checkbox" 
-                        onChange={(e) => setShowExpiredTokens(e.target.checked)} 
+                        onChange={(e) => setShowUsedTokens(e.target.checked)} 
                         />
                         <span className="tokens-section-slider"></span>
                     </label>
                     <button className="admin-panel-btn-primary" onClick={handleTokenModal}>
                         <FontAwesomeIcon icon={faKey} /> Generate Token
                     </button>
+                </div>
+            </div>
+            <div className="admin-panel-filters">
+                <div style={{ marginLeft: "20px" }}>
+                    <label htmlFor="sortBy">Sort By: </label>
+                    <select
+                    id="sortBy"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <optgroup label="Status">
+                            <option value="status_active">Active First</option>
+                            <option value="status_inactive">Inactive First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Creation Date">
+                            <option value="created_asc">Oldest First</option>
+                            <option value="created_desc">Newest First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Expiration">
+                            <option value="expires_asc">Soonest First</option>
+                            <option value="expires_desc">Latest First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Usage">
+                            <option value="used_asc">Oldest Usage</option>
+                            <option value="used_desc">Recent Usage</option>
+                        </optgroup>
+                    </select>
                 </div>
             </div>
 
@@ -142,12 +222,12 @@ export default function TokensSection({ userInfo, searchTerm = ''}) {
                         <th>Expires</th>
                         <th>Used By</th>
                         <th>Used At</th>
-                        <th className='admin-panel-right-align-action'>Actions</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {tokens.map((token) => {
-                    if (token.is_used && !showExpiredTokens) {
+                    {filteredTokens.map((token) => {
+                    if (token.is_used && !showUsedTokens) {
                         return null; // Skip rendering this token if it's used and we're not showing expired
                     }
 
@@ -174,20 +254,31 @@ export default function TokensSection({ userInfo, searchTerm = ''}) {
                             </div>
                         </td>
                         <td>{token.created_at}</td>
-                        <td>{token?.creator || 'System'}</td>
+                        <td>{token?.created_by || 'System'}</td>
                         <td>{!token.is_used ? token.expires_at : '-'}</td>
-                        <td>{token.is_used ? (token.user || 'Unknown') : '-'}</td>
+                        <td>{token.is_used ? (token.used_by || 'Unknown') : '-'}</td>
                         <td>{token.is_used ? token.used_at : '-'}</td>
-                        <td className='admin-panel-right-align'>
-                            {!token.is_used && (
-                            <button
-                                className="admin-panel-btn-icon danger"
-                                onClick={() => handleDeleteToken(token.id)}
-                                title="Revoke Token"
-                            >
-                                <FontAwesomeIcon icon={faTimes} />
-                            </button>
-                            )}
+                        <td>
+                            <div className = "tokens-section-actions">
+                                {!token.is_used && (
+                                <button
+                                    className="admin-panel-btn-icon danger"
+                                    onClick={() => handleDeleteToken(token.id)}
+                                    title="Revoke Token"
+                                >
+                                    <FontAwesomeIcon icon={faTimes} />
+                                </button>
+                                )}
+                                {token.is_used && (
+                                <button
+                                    className="admin-panel-btn-icon danger"
+                                    onClick={() => handleDeleteToken(token.id)}
+                                    title="Delete Token"
+                                >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                                )}
+                            </div>
                         </td>
                         </tr>
                     );

@@ -12,6 +12,7 @@ export async function likePost(postId) {
     });
     
     const data = await handleResponse(response); // Handle the response using your utility function
+    
     return data; // Return the response data
   });
 }

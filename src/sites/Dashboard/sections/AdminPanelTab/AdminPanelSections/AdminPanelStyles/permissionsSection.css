@@ -33,5 +33,25 @@
   border-radius: 12px;
   font-size: 0.75rem;
   margin-right: 5px;
-  color: #495057;
+  color: #fff;
+}
+
+.permissions-section-role-chip.admin {
+  background-color: #6610f2;
+}
+
+.permissions-section-role-chip.user {
+  background-color: #20c997;
+}
+
+.permissions-section-role-chip.guest {
+  background-color: #17a2b8;
+}
+
+.permissions-section-role-chip.moderator {
+  background-color: #dc3545;
+}
+
+.permissions-section-role-chip.uploader {
+  background-color: #fd7e14;
 }
