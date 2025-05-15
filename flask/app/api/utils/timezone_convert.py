@@ -11,10 +11,8 @@ def convert_utc_to_user_tz(utc_dt: datetime, user_tz_str: str) -> str | None:
     Convert a UTC datetime to the user's timezone.
     Returns ISO 8601 string (without timezone info) or None if utc_dt is None.
     """
-    print(f"Converting UTC datetime {utc_dt} to timezone {user_tz_str}")
 
     if utc_dt is None:
-        print("No datetime provided, returning None")
         return None
     
     try:
@@ -28,9 +26,7 @@ def convert_utc_to_user_tz(utc_dt: datetime, user_tz_str: str) -> str | None:
             
         # Convert to naive datetime (without timezone info)
         naive_dt = user_dt.replace(tzinfo=None)
-        print(f"Converted datetime: {naive_dt}")
         return format_datetime_for_frontend(naive_dt.isoformat())
     except Exception as e:
         print(f"Error converting timezone: {user_tz_str}. Defaulting to UTC.")
-        print(f"Exception: {e}")
         return utc_dt.replace(tzinfo=None).isoformat()  # Also return naive UTC

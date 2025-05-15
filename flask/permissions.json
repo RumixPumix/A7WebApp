@@ -197,6 +197,30 @@
             "description": "Create a comment on a post"
         },
         {
+            "name": "forum.routes.update.comment",
+            "description": "Update a comment"
+        },
+        {
+            "name": "forum.routes.delete.comment",
+            "description": "Delete a comment"
+        },
+        {
+            "name": "forum.routes.update.comment.all",
+            "description": "Update any comment"
+        },
+        {
+            "name": "forum.routes.delete.comment.all",
+            "description": "Delete any comment"
+        },
+        {
+            "name": "forum.routes.like.comment",
+            "description": "Like a comment"
+        },
+        {
+            "name": "forum.routes.dislike.comment",
+            "description": "Dislike a comment"
+        },
+        {
             "name": "server.routes.get",
             "description": "Get own server information"
         },

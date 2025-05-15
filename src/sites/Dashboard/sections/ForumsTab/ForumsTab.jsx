@@ -10,6 +10,7 @@ import {
 import  fetchForumPosts  from './ForumAPI/fetchForumPosts';
 import  createPost  from './ForumAPI/createPost';
 import { likePost, dislikePost } from './ForumAPI/postReactions';
+import { likeComment, dislikeComment } from './ForumAPI/commentReactions';
 import  submitComment  from './ForumAPI/submitComment';
 import  deletePost  from './ForumAPI/deletePost';
 import  updatePost  from './ForumAPI/updatePost'; // Assuming you have an update function
@@ -180,10 +181,8 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     if (!message) return;
 
     try {
-      console.log('Submitting comment:', message);
       const result  = await submitComment(activePost.id, message);
       if (!result) {
-        console.log('Failed to submit comment');
         setLoading({ forum: false });
         return;
       }
@@ -192,10 +191,9 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
         setLoading({ forum: false });
         return;
       }
-      console.log('Comments before:', activePost.comments);
       activePost.comments = comments;
       setActivePost(activePost);
-      console.log('Comments after:', activePost.comments);
+      await loadForumPosts(); // Reload posts after commenting
       form.reset();
     } catch (error) {
 
@@ -203,18 +201,21 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
   };
 
   const handleLikeComment = async (commentId, postId) => {
-    const result = await likeComment(commentId, postId);
+    const result = await likeComment(postId, commentId);
     if (!result) return;
 
     activePost.comments = await fetchPostComments(postId);
     setActivePost(activePost);
+    await loadForumPosts(); // Reload posts after liking
   };
 
   const handleDislikeComment = async (commentId, postId) => {
-    const result = await dislikeComment(commentId, postId);
+    const result = await dislikeComment(postId, commentId);
     if (!result) return;
+
     activePost.comments = await fetchPostComments(postId);
     setActivePost(activePost);
+    await loadForumPosts(); // Reload posts after disliking
   };
 
 

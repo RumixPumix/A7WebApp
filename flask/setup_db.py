@@ -75,6 +75,13 @@ def create_json_files():
             {"name": "forum.routes.dislike.post", "description": "Dislike a forum post"},
             {"name": "forum.routes.create.comment", "description": "Create a comment on a post"},
 
+            {"name": "forum.routes.update.comment", "description": "Update a comment"},
+            {"name": "forum.routes.delete.comment", "description": "Delete a comment"},
+            {"name": "forum.routes.update.comment.all", "description": "Update any comment"},
+            {"name": "forum.routes.delete.comment.all", "description": "Delete any comment"},
+            {"name": "forum.routes.like.comment", "description": "Like a comment"},
+            {"name": "forum.routes.dislike.comment", "description": "Dislike a comment"},
+
             {"name": "server.routes.get", "description": "Get own server information"},
             {"name": "server.routes.get.all", "description": "Get all servers information"},
             {"name": "server.routes.create", "description": "Create a server"},
@@ -116,7 +123,7 @@ def create_json_files():
                 "file.route.download.all", "file.route.delete.all", 
                 
                 "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post.all", "forum.routes.delete.post.all", "forum.routes.like.post", "forum.routes.dislike.post",
-                "forum.routes.create.comment",
+                "forum.routes.create.comment", "forum.routes.update.comment.all", "forum.routes.delete.comment.all", "forum.routes.like.comment", "forum.routes.dislike.comment",
 
                 "server.routes.get.all", "server.routes.create.nolimit", "server.routes.delete.all", "server.routes.update.all", "server.routes.start.all", "server.routes.stop.all", "server.routes.restart.all",
                 "server.routes.plugins", "server.routes.send_command.all", "server.routes.logs.all"
@@ -133,7 +140,7 @@ def create_json_files():
                 "file.route.download.all", "file.route.delete.all", 
                 
                 "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post.all", "forum.routes.delete.post.all", "forum.routes.like.post", "forum.routes.dislike.post",
-                "forum.routes.create.comment",
+                "forum.routes.create.comment", "forum.routes.update.comment.all", "forum.routes.delete.comment.all", "forum.routes.like.comment", "forum.routes.dislike.comment",
 
                 "server.routes.get.all", "server.routes.create.nolimit", "server.routes.delete.all", "server.routes.update.all", "server.routes.start.all", "server.routes.stop.all", "server.routes.restart.all",
                 "server.routes.plugins", "server.routes.send_command.all", "server.routes.logs.all"
@@ -145,7 +152,7 @@ def create_json_files():
                 "file.route.upload.private.file.nolimit", "file.route.get.private.files",
 
                 "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post", "forum.routes.delete.post", "forum.routes.like.post", "forum.routes.dislike.post",
-                "forum.routes.create.comment",
+                "forum.routes.create.comment", "forum.routes.update.comment", "forum.routes.delete.comment", "forum.routes.like.comment", "forum.routes.dislike.comment",
 
                 "server.routes.get", "server.routes.create", "server.routes.delete", "server.routes.update", "server.routes.start", "server.routes.stop", "server.routes.restart",
                 "server.routes.plugins", "server.routes.send_command", "server.routes.logs"
@@ -157,7 +164,7 @@ def create_json_files():
                 "file.route.upload.private.file", "file.route.get.private.files",
 
                 "forum.routes.get.posts", "forum.routes.get.post", "forum.routes.create.post", "forum.routes.update.post", "forum.routes.delete.post", "forum.routes.like.post", "forum.routes.dislike.post",
-                "forum.routes.create.comment",
+                "forum.routes.create.comment", "forum.routes.update.comment", "forum.routes.delete.comment", "forum.routes.like.comment", "forum.routes.dislike.comment",
 
                 "server.routes.get", "server.routes.create", "server.routes.delete", "server.routes.update", "server.routes.start", "server.routes.stop", "server.routes.restart",
                 "server.routes.plugins", "server.routes.send_command", "server.routes.logs"

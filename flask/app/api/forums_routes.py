@@ -229,71 +229,94 @@ def create_comment(post_id, current_user, permissions_status):
 @permissions_wrapper('forum.routes.like.comment')
 def like_comment(post_id, comment_id, current_user, permissions_status):
     """Like a comment on a post"""
-    comment = ForumComment.query.get(comment_id)
-    if not comment:
-        return jsonify({'message': 'Comment not found'}), 404
-    
-    existing_like = db.session.query(post_likes).filter_by(
-        post_id=post_id, user_id=current_user.id).first()
-    if existing_like:
-        db.session.execute(
-            post_likes.delete().where(
-                (post_likes.c.post_id == post_id) &
-                (post_likes.c.user_id == current_user.id)
-            )
-        )
+    try:
+        comment = ForumComment.query.get(comment_id)
+        if not comment or comment.post_id != post_id:
+            return jsonify({'message': 'Comment not found'}), 404
+
+        # Prevent double likes/dislikes by tracking user's actions (you can implement a separate table for this if needed)
+        comment.likes += 1
+        # Optionally, if user previously disliked this comment
+        if comment.dislikes > 0:
+            comment.dislikes -= 1
+
         db.session.commit()
-        return jsonify({'message': 'Like removed', 'data': True}), 200
-    # Remove dislike if exists
-    db.session.execute(
-        post_dislikes.delete().where(
-            (post_dislikes.c.post_id == post_id) &
-            (post_dislikes.c.user_id == current_user.id)
-        )
-    )
-    # Add like
-    db.session.execute(
-        post_likes.insert().values(post_id=post_id, user_id=current_user.id)
-    )
-    db.session.commit()
-    return jsonify({
-        "message": "Comment liked successfully",
-        "data": True
-        }), 201
+        return jsonify({'message': 'Comment liked successfully', 'data': True}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500
 
 @forums_bp.route('/posts/<int:post_id>/comment/<int:comment_id>/dislike', methods=['POST'])
 @permissions_wrapper('forum.routes.dislike.comment')
 def dislike_comment(post_id, comment_id, current_user, permissions_status):
     """Dislike a comment on a post"""
-    comment = ForumComment.query.get(comment_id)
-    if not comment:
-        return jsonify({'message': 'Comment not found'}), 404
-    
-    existing_dislike = db.session.query(post_dislikes).filter_by(
-        post_id=post_id, user_id=current_user.id).first()
-    if existing_dislike:
-        db.session.execute(
-            post_dislikes.delete().where(
-                (post_dislikes.c.post_id == post_id) &
-                (post_dislikes.c.user_id == current_user.id)
-            )
-        )
+    try:
+        comment = ForumComment.query.get(comment_id)
+        if not comment or comment.post_id != post_id:
+            return jsonify({'message': 'Comment not found'}), 404
+
+        comment.dislikes += 1
+        if comment.likes > 0:
+            comment.likes -= 1
+
         db.session.commit()
-        return jsonify({'message': 'Dislike removed', 'data': True}), 200
-    # Remove like if exists
-    db.session.execute(
-        post_likes.delete().where(
-            (post_likes.c.post_id == post_id) &
-            (post_likes.c.user_id == current_user.id)
-        )
-    )
-    # Add dislike
-    db.session.execute(
-        post_dislikes.insert().values(post_id=post_id, user_id=current_user.id)
-    )
-    db.session.commit()
-    return jsonify({
-        "message": "Comment disliked successfully",
-        "data": True
-        }), 201
+        return jsonify({'message': 'Comment disliked successfully', 'data': True}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500
+    
+@forums_bp.route('/posts/<int:post_id>/comment/<int:comment_id>', methods=['PUT'])
+@permissions_wrapper(['forum.routes.update.comment', 'forum.routes.update.comment.all'])
+def update_comment(post_id, comment_id, current_user, permissions_status):
+    """Update a comment on a post"""
+    try:
+        comment = ForumComment.query.get(comment_id)
+        if not comment or comment.post_id != post_id:
+            return jsonify({'message': 'Comment not found'}), 404
+
+        if not permissions_status.get('forum.routes.update.comment.all'):
+            if not comment.user_id == current_user.id:
+                return jsonify({"message": "You are not authorized to update this comment!"}), 403
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'message': 'Invalid request data'}), 400
+        
+        comment.message = data.get('message', comment.message)
+        comment.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Comment updated successfully',
+            'data': True
+        })
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+    
+@forums_bp.route('/posts/<int:post_id>/comment/<int:comment_id>', methods=['DELETE'])
+@permissions_wrapper(['forum.routes.delete.comment', 'forum.routes.delete.comment.all'])
+def delete_comment(post_id, comment_id, current_user, permissions_status):
+    """Delete a comment on a post"""
+    try:
+        comment = ForumComment.query.get(comment_id)
+        if not comment or comment.post_id != post_id:
+            return jsonify({'message': 'Comment not found'}), 404
+
+        if not permissions_status.get('forum.routes.delete.comment.all'):
+            if not comment.user_id == current_user.id:
+                return jsonify({"message": "You are not authorized to delete this comment!"}), 403
+        
+        db.session.delete(comment)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Comment deleted successfully',
+            'data': True
+            }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
     
