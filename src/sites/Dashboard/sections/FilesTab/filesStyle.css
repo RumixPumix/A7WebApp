@@ -22,27 +22,6 @@
   align-items: center;
 }
 
-.ft-btn-primary {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.ft-btn-primary:hover {
-  background: linear-gradient(135deg, #2980b9, #3498db);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
 /* File Table - Updated with perfect border alignment */
 .ft-file-table-container {
   background: white;

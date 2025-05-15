@@ -159,7 +159,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
     const handleFileDownload = async (file) => {
         try {
             setDownloadProgress(0);
-            const success = await downloadFile(file.id, (progress) => {
+            const success = await downloadFile(file, (progress) => {
             setDownloadProgress(progress);
             });
             
@@ -284,7 +284,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
 
                 {showUploadButton() && (
                     <div className="ft-file-actions">
-                        <button className="ft-btn-primary" onClick={triggerFileUpload} disabled={loading.files}>
+                        <button className="global-btn-primary" onClick={triggerFileUpload} disabled={loading.files}>
                             <FontAwesomeIcon icon={faFileUpload} />
                             {activeTab === 'private' ? ' Upload Private File' : ' Upload File'}
                         </button>
@@ -336,7 +336,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
                                 <th>Type</th>
                                 <th>Uploaded</th>
                                 <th>Uploaded By</th>
-                                <th className="ft-right-align">Actions</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -360,10 +360,11 @@ function FilesTab({ userInfo, searchTerm = '' }) {
                                     <td>{file.is_folder ? '' : (file.mime_type || file.file_name.split('.').pop().toUpperCase())}</td>
                                     <td>{file.is_folder ? '' : file.uploaded_at}</td>
                                     <td>{file.is_folder ? '' : file.uploaded_by}</td>
-                                    <td className="ft-right-align">
+                                    <td>
+                                        <div className = "global-actions">
                                         {!file.is_folder && allowDownload(file) && (
                                             <button 
-                                                className="ft-btn-icon"
+                                                className="global-btn-icon"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleFileDownload(file);
@@ -376,7 +377,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
                                         )}
                                         {allowDelete(file) && (
                                             <button 
-                                                className="ft-btn-icon ft-danger"
+                                                className="global-btn-icon danger"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleFileDelete(file);
@@ -387,6 +388,7 @@ function FilesTab({ userInfo, searchTerm = '' }) {
                                                 <FontAwesomeIcon icon={faTrashAlt} />
                                             </button>
                                         )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

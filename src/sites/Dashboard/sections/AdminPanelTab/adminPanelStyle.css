@@ -1,68 +1,157 @@
-/* Admin Panel Tab Navigation Styles */
-.admin-panel-tab {
-  padding: 20px;
+/* Admin Tab Container */
+.admin-tab-container {
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.admin-panel-title {
+/* Header Styles */
+.admin-tab-header {
   text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 2rem;
+  margin-bottom: 3rem;
+  position: relative;
 }
 
-.tab-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+.admin-tab-main-icon {
+  font-size: 2.5rem;
+  color: #4e73df;
+  margin-bottom: 1rem;
 }
 
-.tab-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  border: 1px solid #e0e0e0;
+.admin-tab-title {
+  font-size: 2.2rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
-.tab-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  border-color: #4285f4;
-}
-
-.tab-card h3 {
+.admin-tab-subtitle {
+  font-size: 1rem;
+  color: #7f8c8d;
   margin: 0;
-  color: #4285f4;
-  font-size: 1.2rem;
 }
 
-/* Back button styles */
-.back-button {
-  background: #f5f5f5;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+/* Grid Layout */
+.admin-tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Card Styles */
+.admin-tab-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-left: 4px solid transparent;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-tab-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--hover-color);
+}
+
+.admin-tab-card-hover {
+  border-left-color: var(--hover-color);
+}
+
+.admin-tab-card-icon {
+  font-size: 2.5rem;
+  color: var(--icon-color);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.admin-tab-card:hover .admin-tab-card-icon {
+  transform: scale(1.1);
+}
+
+.admin-tab-card-title {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.admin-tab-card-arrow {
+  color: var(--icon-color);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.admin-tab-card:hover .admin-tab-card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Section Styles */
+.admin-tab-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-tab-back-button {
+  background: #f8f9fa;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  color: #495057;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.admin-tab-back-button:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.admin-tab-back-icon {
+  transition: transform 0.2s ease;
+}
+
+.admin-tab-back-button:hover .admin-tab-back-icon {
+  transform: translateX(-3px);
+}
+
+.admin-tab-section-header {
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: background 0.2s;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.back-button:hover {
-  background: #e0e0e0;
+.admin-tab-section-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.8rem;
 }
 
-.admin-panel-section {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+.admin-tab-section-title {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin: 0;
 }

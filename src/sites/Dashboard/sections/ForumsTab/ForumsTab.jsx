@@ -12,6 +12,7 @@ import  createPost  from './ForumAPI/createPost';
 import { likePost, dislikePost } from './ForumAPI/postReactions';
 import { likeComment, dislikeComment } from './ForumAPI/commentReactions';
 import  submitComment  from './ForumAPI/submitComment';
+import  deleteComment  from './ForumAPI/deleteComment';
 import  deletePost  from './ForumAPI/deletePost';
 import  updatePost  from './ForumAPI/updatePost'; // Assuming you have an update function
 import  fetchPostComments  from './ForumAPI/fetchPostComments'; // Assuming you have a function to fetch comments
@@ -200,6 +201,21 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     }
   };
 
+  const handleDeleteComment = async (commentId, postId) => {
+    console.log(commentId, postId);
+    console.log('Deleting comment:', commentId);
+    const result = await deleteComment(postId, commentId);
+    if (!result) return;
+    const comments = await fetchPostComments(postId);
+    if (!comments) {
+      setLoading({ forum: false });
+      return;
+    }
+    activePost.comments = comments;
+    setActivePost(activePost);
+    await loadForumPosts(); // Reload posts after deleting
+  };
+
   const handleLikeComment = async (commentId, postId) => {
     const result = await likeComment(postId, commentId);
     if (!result) return;
@@ -230,7 +246,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     <div className="tab-content">
       <div className="tab-header">
         <h3>Community Forum</h3>
-        <button className="btn-primary" onClick={() => setShowPostModal(true)}>New Post</button>
+        <button className="forum-tab-btn-primary" onClick={() => setShowPostModal(true)}>New Post</button>
       </div>
       <LastUpdated lastUpdated={lastUpdated} />
 
@@ -268,8 +284,8 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                 />
               </div>
               <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowPostModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary">Post</button>
+                <button type="button" className="forum-tab-btn-secondary" onClick={() => setShowPostModal(false)}>Cancel</button>
+                <button type="submit" className="forum-tab-btn-primary">Post</button>
               </div>
             </form>
           </div>
@@ -310,7 +326,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
             <h3>Comments ({activePost.comment_count})</h3>
             <form onSubmit={handleCommentSubmit} className="comment-form">
               <textarea name="comment" placeholder="Add a comment..." required />
-              <button type="submit" className="btn-primary">Post Comment</button>
+              <button type="submit" className="forum-tab-btn-primary">Post Comment</button>
             </form>
 
             {activePost.comments.map(comment => (
@@ -324,12 +340,16 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                 </div>
                 <div className="comment-actions">
                   <button>Reply</button>
-                  <div>
+                  <div className="comment-actions">
                     <button onClick={() => handleLikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsUp} /></button>
                     <span>{comment.likes}</span>
                     <button onClick={() => handleDislikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsDown} /></button>
                     <span>{comment.dislikes}</span>
-                    
+                    {(userInfo.is_admin || comment.author_id === userInfo.user_id) && (
+                      <button onClick={() => handleDeleteComment(comment.id, activePost.id)}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -350,7 +370,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                     {(userInfo.is_admin || post.author?.id === userInfo.user_id) && (
                     <div className="post-controls">
                     <button
-                    className="btn-icon"
+                    className="forum-tab-btn-icon"
                     onClick={(e) => {
                         e.stopPropagation();
                         // Your edit logic here
@@ -360,7 +380,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                     <FontAwesomeIcon icon={faPen} />
                     </button>
                     <button
-                    className="btn-icon danger"
+                    className="forum-tab-btn-icon danger"
                     onClick={(e) => {
                         e.stopPropagation();
                         // Your delete logic here

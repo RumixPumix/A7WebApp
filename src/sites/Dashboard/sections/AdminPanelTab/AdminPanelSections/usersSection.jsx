@@ -22,6 +22,7 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
     const [showUserModal, setShowUserModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [sortBy, setSortBy] = useState('status_active');
 
     //TEMPORARY FIX
     const[roles, setRoles] = useState([]);
@@ -40,12 +41,35 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
     }
     // END TEMP FIX
 
-    const filteredUsers = users.filter(user => 
+    const filteredUsers = users
+    .filter(user => 
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.created_at.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.last_login?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
+    .sort((a, b) => {
+        switch (sortBy) {
+            case 'status_active':
+                return (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0);
+            case 'status_inactive':
+                return (a.is_active ? 1 : 0) - (b.is_active ? 1 : 0);
+            case 'created_asc':
+                return new Date(a.created_at) - new Date(b.created_at);
+            case 'created_desc':
+                return new Date(b.created_at) - new Date(a.created_at);
+            case 'expires_asc':
+                return new Date(a.last_login || 0) - new Date(b.last_login || 0);
+            case 'expires_desc':
+                return new Date(b.last_login || 0) - new Date(a.last_login || 0);
+            case 'used_asc':
+                return a.role.localeCompare(b.role);
+            case 'used_desc':
+                return b.role.localeCompare(a.role);
+            default:
+                return 0;
+        }
+    });
 
     async function loadUsersData(){
         try {
@@ -211,8 +235,38 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
                 </div>
                 )}
             </div>
-            {users.length === 0 ? (
-                <div className="admin-panel-empty-state">No users found</div>
+            <div className="admin-panel-filters">
+                <div style={{ marginLeft: "20px" }}>
+                    <label htmlFor="sortBy">Sort By: </label>
+                    <select
+                    id="sortBy"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <optgroup label="Status">
+                            <option value="status_active">Online First</option>
+                            <option value="status_inactive">Offline First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Join Date">
+                            <option value="created_asc">Oldest First</option>
+                            <option value="created_desc">Newest First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Last Login">
+                            <option value="expires_asc">Oldest First</option>
+                            <option value="expires_desc">Newest First</option>
+                        </optgroup>
+                        
+                        <optgroup label="Role">
+                            <option value="used_asc">Role Name A-Z</option>
+                            <option value="used_desc">Role Name Z-A</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            {filteredUsers.length === 0 ? (
+                <div className="admin-panel-empty-state">No users found for {searchTerm}</div>
             ) : (
                 <div className="user-section-user-table-container">
                     <table className="user-section-user-table">
@@ -226,7 +280,7 @@ export default function UsersSection({ userInfo, searchTerm = ''}){
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                                 <tr key={user.id}>
                                     <td>{user.username}</td>
                                     <td>{user.created_at}</td>

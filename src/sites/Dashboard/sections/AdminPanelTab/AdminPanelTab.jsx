@@ -1,22 +1,56 @@
-import { useState, useEffect } from 'react';
-import './adminPanelStyle.css'; // New CSS for the tab navigation
+import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faUsers, 
+  faKey, 
+  faUserShield, 
+  faShieldAlt,
+  faArrowLeft,
+  faUserCog
+} from '@fortawesome/free-solid-svg-icons';
 import UsersSection from './AdminPanelSections/usersSection.jsx';
 import TokensSection from './AdminPanelSections/tokensSection.jsx';
 import RolesSection from './AdminPanelSections/rolesSection.jsx';
 import PermissionsSection from './AdminPanelSections/permissionsSection.jsx';
 
-//For sections of admin panel
-import './adminPanelDefault.css'
+import './adminPanelDefault.css';
+import './adminPanelStyle.css'
+
+
+const tabs = [
+  { 
+    id: 'users', 
+    label: 'Users', 
+    icon: faUsers,
+    color: '#4e73df',
+    component: UsersSection 
+  },
+  { 
+    id: 'tokens', 
+    label: 'Tokens', 
+    icon: faKey,
+    color: '#1cc88a',
+    component: TokensSection 
+  },
+  { 
+    id: 'roles', 
+    label: 'Roles', 
+    icon: faUserShield,
+    color: '#f6c23e',
+    component: RolesSection 
+  },
+  { 
+    id: 'permissions', 
+    label: 'Permissions', 
+    icon: faShieldAlt,
+    color: '#e74a3b',
+    component: PermissionsSection 
+  },
+];
 
 function AdminPanelTab({ userInfo, searchTerm = '' }) {
   const [activeTab, setActiveTab] = useState(null);
-
-  const tabs = [
-    { id: 'users', label: 'Users', component: UsersSection },
-    { id: 'tokens', label: 'Tokens', component: TokensSection },
-    { id: 'roles', label: 'Roles', component: RolesSection },
-    { id: 'permissions', label: 'Permissions', component: PermissionsSection },
-  ];
+  const [hoveredTab, setHoveredTab] = useState(null);
 
   const handleBack = () => {
     setActiveTab(null);
@@ -24,11 +58,26 @@ function AdminPanelTab({ userInfo, searchTerm = '' }) {
 
   if (activeTab) {
     const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
+    const activeTabData = tabs.find(tab => tab.id === activeTab);
+    
     return (
-      <div className="admin-panel-section">
-        <button className="back-button" onClick={handleBack}>
-          &larr; Back to Admin Panel
+      <div className="admin-tab-section">
+        <button 
+          className="admin-tab-back-button" 
+          onClick={handleBack}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="admin-tab-back-icon" />
+          Back to Dashboard
         </button>
+        <div className="admin-tab-section-header">
+          <div 
+            className="admin-tab-section-icon"
+            style={{ backgroundColor: activeTabData.color }}
+          >
+            <FontAwesomeIcon icon={activeTabData.icon} />
+          </div>
+          <h2 className="admin-tab-section-title">{activeTabData.label} Management</h2>
+        </div>
         <ActiveComponent 
           userInfo={userInfo} 
           searchTerm={searchTerm} 
@@ -39,16 +88,33 @@ function AdminPanelTab({ userInfo, searchTerm = '' }) {
   }
 
   return (
-    <div className="admin-panel-tab">
-      <h2 className="admin-panel-title">Admin Panel</h2>
-      <div className="tab-grid">
+    <div className="admin-tab-container">
+      <div className="admin-tab-header">
+        <FontAwesomeIcon icon={faUserCog} className="admin-tab-main-icon" />
+        <h2 className="admin-tab-title">Admin Dashboard</h2>
+        <p className="admin-tab-subtitle">Manage your application settings and users</p>
+      </div>
+      
+      <div className="admin-tab-grid">
         {tabs.map((tab) => (
           <div 
-            key={tab.id} 
-            className="tab-card"
+            key={tab.id}
+            className={`admin-tab-card ${hoveredTab === tab.id ? 'admin-tab-card-hover' : ''}`}
             onClick={() => setActiveTab(tab.id)}
+            onMouseEnter={() => setHoveredTab(tab.id)}
+            onMouseLeave={() => setHoveredTab(null)}
+            style={{
+              '--hover-color': tab.color,
+              '--icon-color': tab.color
+            }}
           >
-            <h3>{tab.label}</h3>
+            <div className="admin-tab-card-icon">
+              <FontAwesomeIcon icon={tab.icon} />
+            </div>
+            <h3 className="admin-tab-card-title">{tab.label}</h3>
+            <div className="admin-tab-card-arrow">
+              <FontAwesomeIcon icon={faArrowLeft} rotation={180} />
+            </div>
           </div>
         ))}
       </div>
