@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faSignOutAlt, faServer, faUsers, faFileUpload, faFileDownload,
+  faSignOutAlt, faServer, faUsers, faFileUpload,
   faComments, faTerminal, faCog, faBell,
   faHouse, faTools
 } from '@fortawesome/free-solid-svg-icons';
 import './dashboardStyle.css';
+import './global.css'
 import notification from '../ModularComponents/notification';
 import ServersTab from './sections/ServersTab/ServersTab';
 import AdminPanelTab from './sections/AdminPanelTab/AdminPanelTab';

@@ -59,6 +59,7 @@ function ServersTab({ userInfo }) {
 
   useEffect(() => {
     loadServers();
+    console.log(userInfo.permissions);
   }, []);
 
   useEffect(() => {
@@ -221,16 +222,10 @@ function ServersTab({ userInfo }) {
         </div>
         
         <div className="header-right">
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search servers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          {userInfo.is_admin && (
+          {(
+            userInfo.permissions.includes("server.routes.create") ||
+            userInfo.permissions.includes("server.routes.create.nolimit")
+          ) && (
             <button className="btn btn-primary" onClick={openCreateModal}>
               <FontAwesomeIcon icon={faPlay} /> Deploy New Server
             </button>
@@ -242,11 +237,6 @@ function ServersTab({ userInfo }) {
         <div className="empty-state">
           <FontAwesomeIcon icon={faInfoCircle} size="2x" />
           <p>No servers found</p>
-          {userInfo.is_admin && (
-            <button className="btn btn-primary" onClick={openCreateModal}>
-              Deploy your first server
-            </button>
-          )}
         </div>
       ) : (
         <div className="servers-grid">

@@ -12,7 +12,7 @@ export default async function fetchPostComments(postId) {
     
     const data = await handleResponse(response);
 
-    return data['comments'];
+    return data;
     
   });
 }

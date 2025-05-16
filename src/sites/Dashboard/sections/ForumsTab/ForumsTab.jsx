@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faThumbsUp, 
   faThumbsDown,
-  faPen,       // Add this
-  faTrash      // Add this
+  faPen,
+  faTrash,
+  faMessage,
+  faUser,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
-// Import your API functions
 import  fetchForumPosts  from './ForumAPI/fetchForumPosts';
 import  createPost  from './ForumAPI/createPost';
 import { likePost, dislikePost } from './ForumAPI/postReactions';
@@ -14,13 +16,13 @@ import { likeComment, dislikeComment } from './ForumAPI/commentReactions';
 import  submitComment  from './ForumAPI/submitComment';
 import  deleteComment  from './ForumAPI/deleteComment';
 import  deletePost  from './ForumAPI/deletePost';
-import  updatePost  from './ForumAPI/updatePost'; // Assuming you have an update function
-import  fetchPostComments  from './ForumAPI/fetchPostComments'; // Assuming you have a function to fetch comments
+import  updatePost  from './ForumAPI/updatePost';
+import  fetchPostComments  from './ForumAPI/fetchPostComments';
 import notification from '../../../ModularComponents/notification.jsx';
-import Spinner from '../../../ModularComponents/spinner.jsx'; // Assuming you have a spinner component
-import LastUpdated from '../../../ModularComponents/lastUpdated.jsx'; // Assuming you have a last updated component
-import './forumsStyle.css'; // Your CSS file for styling
-
+import Spinner from '../../../ModularComponents/spinner.jsx';
+import LastUpdated from '../../../ModularComponents/lastUpdated.jsx';
+import ActivePost from './ActivePost.jsx';
+import './forumsTabStyle.css';
 
 function ForumsTab({ userInfo, searchTerm = '' }) {
   const [loading, setLoading] = useState({ forum: true });
@@ -29,7 +31,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', post_type: 'discussion', message: '' });
   const [isEditing, setIsEditing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null); // Track when last updated
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const filteredForumPosts = forumPosts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,9 +49,8 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
         return;
       }
       setForumPosts(posts);
-      setLastUpdated(Date.now()); // Update last updated time
+      setLastUpdated(Date.now());
     } catch (error) {
-
     } finally {
       setLoading({ forum: false });
     }
@@ -62,7 +63,6 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
   useEffect(() => {
     const interval = setInterval(() => {
       if (lastUpdated && (Date.now() - lastUpdated) > 30000) {
-        //setLoading({ forum: true });
         loadForumPosts();
       }
     }, 1000);
@@ -75,7 +75,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     try {
       let result;
       if (isEditing && activePost) {
-        result = await updatePost(activePost.id, newPost);  // <--- call your edit API here
+        result = await updatePost(activePost.id, newPost);
       } else {
         result = await createPost(newPost);
       }
@@ -84,14 +84,13 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
         setLoading({ forum: false });
         return;
       } 
-      await loadForumPosts(); // Reload posts after creating/updating
+      await loadForumPosts();
       handleViewPost(result.id);
       setShowPostModal(false);
       setNewPost({ title: '', post_type: 'discussion', message: '' });
       setIsEditing(false);
       setActivePost(null);
     } catch (error) {
-
     }
   };
 
@@ -100,141 +99,44 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
     if (selected) {
         selected.comments = await fetchPostComments(postId);
         setActivePost(selected);
-        setIsEditing(true);  // <-- Add this!
+        setIsEditing(true);
         setShowPostModal(true);
         setNewPost({ title: selected.title, post_type: selected.post_type, message: selected.message });
     }
   };
 
-
-   const handleDeletePost = async (postId) => {
-        const selected = forumPosts.find(post => post.id === postId);
-        if (!selected) {
-            notification('Post not found', 'error'); // Use your notification system here
-            return;
-        }
-
-        const confirmDelete = window.confirm(
-            `Are you sure you want to delete "${selected.title}"? This action cannot be undone.`
-        );
-
-        if (!confirmDelete) return;
-
-        try {
-            setLoading({ forum: true });
-            const result = await deletePost(postId);  // Assuming this calls your API and handles auth.
-            if (!result) {
-                setLoading({ forum: false });
-                return;
-            }
-            await loadForumPosts(); // Reload posts after deleting
-            
-            if (activePost?.id === postId) {
-                setActivePost(null); // Close detail view if the deleted post was being viewed.
-            }
-        } catch (error) {
-        }
-    };
-
-  const handleViewPost = async (postId) => {
+  const handleDeletePost = async (postId) => {
     const selected = forumPosts.find(post => post.id === postId);
-    if (selected) {
-      selected.comments = await fetchPostComments(postId); // Add comments to the selected post
-      setActivePost(selected);
+    if (!selected) {
+        notification('Post not found', 'error');
+        return;
     }
-  };
 
-  const handleLikePost = async (postId) => {
-    const result = await likePost(postId);
-    if (!result) return;
-  
-    // Fetch updated post data after the like
-    const updatedPosts = await fetchForumPosts();
-    setForumPosts(updatedPosts);
-  
-    const updatedPost = updatedPosts.find(p => p.id === postId);
-    if (updatedPost) {
-      updatedPost.comments = await fetchPostComments(postId);
-      setActivePost(updatedPost);
-    }
-  };
+    const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${selected.title}"? This action cannot be undone.`
+    );
 
-  const handleDislikePost = async (postId) => {
-    const result = await dislikePost(postId);
-    if (!result) return;
-  
-    // Fetch updated post data after the dislike
-    const updatedPosts = await fetchForumPosts();
-    setForumPosts(updatedPosts);
-  
-    const updatedPost = updatedPosts.find(p => p.id === postId);
-    if (updatedPost) {
-      updatedPost.comments = await fetchPostComments(postId);
-      setActivePost(updatedPost);
-    }
-  };
-  
-
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const message = form.comment.value.trim();
-    if (!message) return;
+    if (!confirmDelete) return;
 
     try {
-      const result  = await submitComment(activePost.id, message);
-      if (!result) {
-        setLoading({ forum: false });
-        return;
-      }
-      const comments = await fetchPostComments(activePost.id);
-      if (!comments) {
-        setLoading({ forum: false });
-        return;
-      }
-      activePost.comments = comments;
-      setActivePost(activePost);
-      await loadForumPosts(); // Reload posts after commenting
-      form.reset();
+        setLoading({ forum: true });
+        const result = await deletePost(postId);
+        if (!result) {
+            setLoading({ forum: false });
+            return;
+        }
+        await loadForumPosts();
+        
+        if (activePost?.id === postId) {
+            setActivePost(null);
+        }
     } catch (error) {
-
     }
   };
 
-  const handleDeleteComment = async (commentId, postId) => {
-    console.log(commentId, postId);
-    console.log('Deleting comment:', commentId);
-    const result = await deleteComment(postId, commentId);
-    if (!result) return;
-    const comments = await fetchPostComments(postId);
-    if (!comments) {
-      setLoading({ forum: false });
-      return;
-    }
-    activePost.comments = comments;
-    setActivePost(activePost);
-    await loadForumPosts(); // Reload posts after deleting
+  const handleViewPost = async (post) => {
+    setActivePost(post);
   };
-
-  const handleLikeComment = async (commentId, postId) => {
-    const result = await likeComment(postId, commentId);
-    if (!result) return;
-
-    activePost.comments = await fetchPostComments(postId);
-    setActivePost(activePost);
-    await loadForumPosts(); // Reload posts after liking
-  };
-
-  const handleDislikeComment = async (commentId, postId) => {
-    const result = await dislikeComment(postId, commentId);
-    if (!result) return;
-
-    activePost.comments = await fetchPostComments(postId);
-    setActivePost(activePost);
-    await loadForumPosts(); // Reload posts after disliking
-  };
-
-
 
   if (loading.forum) {
     return (
@@ -243,19 +145,19 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
   }
 
   return (
-    <div className="tab-content">
-      <div className="tab-header">
+    <div className="global-tab-content">
+      <div className="global-tab-header">
         <h3>Community Forum</h3>
-        <button className="forum-tab-btn-primary" onClick={() => setShowPostModal(true)}>New Post</button>
+        <button className="global-btn-primary" onClick={() => setShowPostModal(true)}>New Post</button>
       </div>
       <LastUpdated lastUpdated={lastUpdated} />
 
       {showPostModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="forum-tab_modal">
+          <div className="forum-tab_modal-content">
             <h3>{isEditing ? "Edit Post" : "Create Post"}</h3>
             <form onSubmit={handleNewPostSubmit}>
-              <div className="form-group">
+              <div className="forum-tab_form-group">
                 <label>Title</label>
                 <input
                   type="text"
@@ -264,7 +166,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="forum-tab_form-group">
                 <label>Type</label>
                 <select
                   value={newPost.post_type}
@@ -275,7 +177,7 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                   <option value="announcement">Announcement</option>
                 </select>
               </div>
-              <div className="form-group">
+              <div className="forum-tab_form-group">
                 <label>Message</label>
                 <textarea
                   value={newPost.message}
@@ -283,9 +185,9 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
                   required
                 />
               </div>
-              <div className="form-actions">
-                <button type="button" className="forum-tab-btn-secondary" onClick={() => setShowPostModal(false)}>Cancel</button>
-                <button type="submit" className="forum-tab-btn-primary">Post</button>
+              <div className="forum-tab_form-actions">
+                <button type="button" className="global-btn-secondary" onClick={() => setShowPostModal(false)}>Cancel</button>
+                <button type="submit" className="global-btn-primary">Post</button>
               </div>
             </form>
           </div>
@@ -293,116 +195,72 @@ function ForumsTab({ userInfo, searchTerm = '' }) {
       )}
 
       {forumPosts.length === 0 ? (
-        <div className="empty-state">No forum posts found</div>
+        <div className="global-empty-state">No forum posts found</div>
       ) : activePost ? (
-        <div className="forum-post-detail">
-          <button className="back-button" onClick={() => setActivePost(null)}>
-            ← Back to posts
-          </button>
-
-          <div className="post-header">
-            <h2>{activePost.title}</h2>
-            <div className="post-meta">
-              <span>Posted by {activePost.author?.username || 'Unknown'}</span>
-              <span>{activePost.created_at}</span>
-              <span className="post-type">{activePost.post_type}</span>
-            </div>
-          </div>
-
-          <div className="post-content">
-            <p>{activePost.message}</p>
-          </div>
-
-          <div className="post-actions">
-            <button onClick={() => handleLikePost(activePost.id)}>
-              <FontAwesomeIcon icon={faThumbsUp} /> Like ({activePost.like_count})
-            </button>
-            <button onClick={() => handleDislikePost(activePost.id)}>
-              <FontAwesomeIcon icon={faThumbsDown} /> Dislike ({activePost.dislike_count})
-            </button>
-          </div>
-
-          <div className="post-comments">
-            <h3>Comments ({activePost.comment_count})</h3>
-            <form onSubmit={handleCommentSubmit} className="comment-form">
-              <textarea name="comment" placeholder="Add a comment..." required />
-              <button type="submit" className="forum-tab-btn-primary">Post Comment</button>
-            </form>
-
-            {activePost.comments.map(comment => (
-              <div key={comment.id} className="comment">
-                <div className="comment-header">
-                  <span>{comment.author}</span>
-                  <span>{comment.created_at}</span>
-                </div>
-                <div className="comment-content">
-                  <p>{comment.message}</p>
-                </div>
-                <div className="comment-actions">
-                  <button>Reply</button>
-                  <div className="comment-actions">
-                    <button onClick={() => handleLikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsUp} /></button>
-                    <span>{comment.likes}</span>
-                    <button onClick={() => handleDislikeComment(comment.id, activePost.id)}><FontAwesomeIcon icon={faThumbsDown} /></button>
-                    <span>{comment.dislikes}</span>
-                    {(userInfo.is_admin || comment.author_id === userInfo.user_id) && (
-                      <button onClick={() => handleDeleteComment(comment.id, activePost.id)}>
+        <ActivePost post={activePost} userInfo={userInfo} setActivePost={setActivePost}/>
+      ) : (
+        <div className="forum-tab_posts-container">
+          {filteredForumPosts.map(post => (
+            <div key={post.id} className="forum-tab_post-card" onClick={() => setActivePost(post)}>
+              <div className="forum-tab_post-votes">
+                <button className="forum-tab_vote-btn">
+                  <FontAwesomeIcon icon={faThumbsUp} />
+                </button>
+                <span className="forum-tab_vote-count">{post.likes || 0}</span>
+                <button className="forum-tab_vote-btn">
+                  <FontAwesomeIcon icon={faThumbsDown} />
+                </button>
+              </div>
+              <div className="forum-tab_post-content">
+                <div className="forum-tab_post-header">
+                  <span className={`forum-tab_post-type forum-tab_type-${post.post_type}`}>
+                    {post.post_type}
+                  </span>
+                  <h4 className="forum-tab_post-title">{post.title}</h4>
+                  {(userInfo.is_admin || post.author?.id === userInfo.user_id) && (
+                    <div className="forum-tab_post-controls">
+                      <button
+                        className="forum-tab_control-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditPost(post.id);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                      <button
+                        className="forum-tab_control-btn forum-tab_control-btn-danger"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost(post.id);
+                        }}
+                      >
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
+                <div className="forum-tab_post-body">
+                  <p>{post.message.length > 250 ? `${post.message.substring(0, 250)}...` : post.message}</p>
+                </div>
+                <div className="forum-tab_post-footer">
+                  <span className="forum-tab_footer-item">
+                    <FontAwesomeIcon icon={faUser} className="forum-tab_footer-icon" />
+                    {post.author?.username || 'Unknown'}
+                  </span>
+                  <span className="forum-tab_footer-item">
+                    <FontAwesomeIcon icon={faClock} className="forum-tab_footer-icon" />
+                    {post.created_at}
+                  </span>
+                  <span className="forum-tab_footer-item">
+                    <FontAwesomeIcon icon={faMessage} className="forum-tab_footer-icon" />
+                    {post.comment_count || 0} comments
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="forum-posts-list">
-            {filteredForumPosts.map(post => (
-                <div
-                key={post.id}
-                className="forum-post-card"
-                onClick={() => handleViewPost(post.id)}
-                >
-                <div className="post-header">
-                    <h4>{post.title}</h4>
-                    <span className="post-type">{post.post_type}</span>
-                    {(userInfo.is_admin || post.author?.id === userInfo.user_id) && (
-                    <div className="post-controls">
-                    <button
-                    className="forum-tab-btn-icon"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Your edit logic here
-                        handleEditPost(post.id);
-                    }}
-                    >
-                    <FontAwesomeIcon icon={faPen} />
-                    </button>
-                    <button
-                    className="forum-tab-btn-icon danger"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Your delete logic here
-                        handleDeletePost(post.id);
-                    }}
-                    >
-                    <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                    </div>
-                    )}
-                </div>
-                <div className="post-preview">
-                    <p>{post.message.length > 150 ? `${post.message.substring(0, 150)}...` : post.message}</p>
-                </div>
-                <div className="post-footer">
-                    <span>Posted by {post.author?.username || 'Unknown'}</span>
-                    <span>{post.created_at}</span>
-                    <span>{post.comment_count || 0} comments</span>
-                </div>
-                </div>
-            ))}
             </div>
+          ))}
+        </div>
       )}
     </div>
   );

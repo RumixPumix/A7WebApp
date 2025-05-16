@@ -1,7 +1,7 @@
 // config.js
 const config = {
     development: {
-      baseURL: 'http://127.0.0.1:5000',
+      baseURL: 'http://10.10.99.253:5000',
     },
     production: {
       baseURL: 'https://ace7esports.com:5500',
